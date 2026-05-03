@@ -5,7 +5,634 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Comando | PetLojas (Cloud)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.c<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Comando | PetLojas (Cloud Pro)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .active-project { border-color: #3b82f6 !important; background-color: #1e293b !important; opacity: 1 !important; }
+        .active-link { border-color: #10b981 !important; background-color: #1e293b !important; }
+        
+        #cloud-loader { display: flex; }
+        .hidden-loader { display: none !important; }
+        
+        /* Efeito de Cursor para itens arrastáveis */
+        .sortable-ghost { opacity: 0.4; }
+        .sortable-drag { cursor: grabbing !important; }
+        .draggable-item { cursor: grab; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden bg-[#0F172A] text-slate-200 flex flex-col">
+
+    <header class="w-full px-6 py-4 flex justify-between items-center bg-[#1E293B] border-b border-slate-700/50 shadow-md z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <i class="fas fa-rocket text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-wide">Painel de Comando</h1>
+                <p class="text-slate-400 text-xs">Encontre tudo em um só lugar</p>
+            </div>
+        </div>
+        <div class="text-right flex flex-col items-end gap-1">
+            <div class="flex items-center gap-2">
+                <i id="cloud-status-icon" class="fas fa-cloud-upload-alt text-slate-500 text-xs"></i>
+                <span id="cloud-status-text" class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Conectando...</span>
+            </div>
+            <div class="text-xs text-slate-400">v7.0 • Drag & Drop + Custom Icons</div>
+        </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-[1800px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden relative">
+        
+        <div id="cloud-loader" class="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-sm z-40 flex-col items-center justify-center">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+            <p class="text-slate-300 font-medium tracking-wide">Sincronizando com a Nuvem...</p>
+        </div>
+
+        <section class="lg:col-span-2 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
+            <div class="p-4 border-b border-slate-700/50 shrink-0 flex justify-between items-center">
+                <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ferramentas</h3>
+                <button onclick="openToolModal()" class="w-7 h-7 bg-purple-600 hover:bg-purple-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg shadow-purple-600/20">
+                    <i class="fas fa-plus text-[10px]"></i>
+                </button>
+            </div>
+            <div id="tools-list" class="p-3 flex-1 overflow-y-auto space-y-2 pb-10"></div>
+        </section>
+
+        <section class="lg:col-span-3 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-slate-700/50 shrink-0 flex justify-between items-center">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Meus Projetos</h3>
+                <button onclick="openProjectModal()" class="w-8 h-8 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg shadow-blue-600/20">
+                    <i class="fas fa-plus text-xs"></i>
+                </button>
+            </div>
+            <div id="project-list" class="p-4 flex-1 overflow-y-auto space-y-3 pb-10"></div>
+        </section>
+
+        <section class="lg:col-span-4 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
+            <div class="p-6 border-b border-slate-700/50 shrink-0 flex justify-between items-start">
+                <div class="overflow-hidden">
+                    <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-bold uppercase tracking-wider">Projeto Ativo</span>
+                    <h2 id="active-project-name" class="text-2xl font-bold text-white mt-2 truncate">---</h2>
+                    <p id="active-project-subtitle" class="text-xs text-slate-400 mt-1 truncate">---</p>
+                </div>
+                <button onclick="openLinkModal()" class="w-10 h-10 bg-green-600 hover:bg-green-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg shadow-green-600/20 shrink-0 ml-2">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <div id="links-list" class="p-6 flex-1 overflow-y-auto space-y-4 pb-10"></div>
+        </section>
+
+        <section class="lg:col-span-3 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-slate-700/50 shrink-0 flex justify-between items-center">
+                <div class="overflow-hidden pr-2">
+                    <h3 class="font-bold text-white flex items-center gap-2 text-sm truncate">
+                        <i class="fas fa-book text-amber-500"></i> Caderneta
+                    </h3>
+                    <p id="active-link-name" class="text-[10px] text-slate-400 mt-1 truncate">Selecione um subprojeto...</p>
+                </div>
+                <button id="add-note-btn" onclick="openNoteModal()" class="w-8 h-8 bg-amber-600 hover:bg-amber-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg shadow-amber-600/20 hidden shrink-0">
+                    <i class="fas fa-plus text-xs"></i>
+                </button>
+            </div>
+            <div class="p-5 flex-1 overflow-y-auto">
+                <div id="notebook-container" class="space-y-3 pb-10"></div>
+            </div>
+        </section>
+    </main>
+
+    <input type="file" id="icon-file-input" class="hidden" accept="image/*">
+
+    <div id="tool-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-sm p-6">
+            <h2 id="tool-modal-title" class="text-xl font-bold text-white mb-6">Nova Ferramenta</h2>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-tool-index">
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome</label><input type="text" id="tool-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Link)</label><input type="text" id="tool-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500"></div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal('tool-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
+                <button onclick="saveTool()" class="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold">Salvar na Nuvem</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="project-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6">
+            <h2 id="project-modal-title" class="text-xl font-bold text-white mb-6">Novo Projeto</h2>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-project-index">
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome do Projeto</label><input type="text" id="proj-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Subtítulo / Descrição</label><input type="text" id="proj-sub-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500"></div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal('project-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
+                <button onclick="saveProject()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Salvar na Nuvem</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="link-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6">
+            <h2 id="link-modal-title" class="text-xl font-bold text-white mb-6">Novo Subprojeto (Link)</h2>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-link-index">
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Título</label><input type="text" id="link-title-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Endereço)</label><input type="text" id="link-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Descrição Curta</label><input type="text" id="link-desc-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500"></div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal('link-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
+                <button onclick="saveLink()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Salvar na Nuvem</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="note-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6">
+            <h2 id="note-modal-title" class="text-xl font-bold text-white mb-6">Nova Anotação</h2>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-note-index">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tipo</label>
+                        <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                            <option value="task">Tarefa</option>
+                            <option value="note">Texto Livre</option>
+                            <option value="reminder">Lembrete</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Urgência</label>
+                        <select id="note-urgency" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                            <option value="normal">Normal</option>
+                            <option value="high" class="text-red-400">Alta Urgência</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Importância</label>
+                        <select id="note-importance" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                            <option value="normal">Normal</option>
+                            <option value="high" class="text-amber-400">Alta Importância</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Conteúdo</label>
+                    <textarea id="note-content" rows="3" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm resize-none"></textarea>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal('note-modal')" class="px-4 py-2 text-slate-400 text-sm">Cancelar</button>
+                <button onclick="saveNote()" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm">Salvar na Nuvem</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. CONFIGURAÇÃO DO FIREBASE (Suas chaves)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBA1ed_R66E_UFpFw-irpPtwSSIQvhy9jY",
+            authDomain: "painel-de-controle-3f7d8.firebaseapp.com",
+            projectId: "painel-de-controle-3f7d8",
+            storageBucket: "painel-de-controle-3f7d8.firebasestorage.app",
+            messagingSenderId: "234342271805",
+            appId: "1:234342271805:web:df8c5476c11cb6ab1d1354"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const dashboardRef = db.collection('petlojas_admin').doc('painel_central');
+
+        // ==========================================
+        // 2. VARIÁVEIS GLOBAIS E SINCRONIZAÇÃO
+        // ==========================================
+        let tools = [];
+        let projects = [];
+        let activeProjectIdx = null;
+        let activeLinkIdx = null;
+        let sortableInstances = {}; // Guarda as instâncias de arrastar
+        let awaitingIconFor = null; // Controla qual ícone está sendo editado
+
+        function saveToCloud() {
+            const statusIcon = document.getElementById('cloud-status-icon');
+            const statusText = document.getElementById('cloud-status-text');
+            statusIcon.className = "fas fa-sync fa-spin text-blue-400 text-xs";
+            statusText.innerText = "Salvando...";
+            
+            dashboardRef.set({ tools, projects, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+            .then(() => {
+                statusIcon.className = "fas fa-cloud-check text-emerald-400 text-xs";
+                statusText.innerText = "Sincronizado";
+            }).catch((error) => console.error(error));
+        }
+
+        function loadFromCloud() {
+            dashboardRef.get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    tools = data.tools || [];
+                    projects = data.projects || [];
+                    if (projects.length > 0) activeProjectIdx = 0;
+                }
+                document.getElementById('cloud-loader').classList.add('hidden-loader');
+                renderTools();
+                renderProjects();
+            });
+        }
+
+        // ==========================================
+        // 3. MOTOR DE DRAG AND DROP (ARRASTAR)
+        // ==========================================
+        function bindSortable(containerId, listType) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            if (sortableInstances[containerId]) sortableInstances[containerId].destroy();
+            
+            sortableInstances[containerId] = Sortable.create(el, {
+                animation: 150,
+                delay: 150, // Delay necessário para diferenciar clique de arrasto
+                delayOnTouchOnly: true,
+                ghostClass: 'sortable-ghost',
+                onEnd: function (evt) {
+                    if (evt.oldIndex === evt.newIndex) return;
+                    
+                    if (listType === 'tools') {
+                        const item = tools.splice(evt.oldIndex, 1)[0];
+                        tools.splice(evt.newIndex, 0, item);
+                        saveToCloud(); renderTools();
+                    } else if (listType === 'projects') {
+                        const item = projects.splice(evt.oldIndex, 1)[0];
+                        projects.splice(evt.newIndex, 0, item);
+                        activeProjectIdx = handleIndexShift(activeProjectIdx, evt.oldIndex, evt.newIndex);
+                        saveToCloud(); renderProjects();
+                    } else if (listType === 'links') {
+                        const arr = projects[activeProjectIdx].links;
+                        const item = arr.splice(evt.oldIndex, 1)[0];
+                        arr.splice(evt.newIndex, 0, item);
+                        activeLinkIdx = handleIndexShift(activeLinkIdx, evt.oldIndex, evt.newIndex);
+                        saveToCloud(); updateCenter();
+                    } else if (listType === 'notes') {
+                        const arr = projects[activeProjectIdx].links[activeLinkIdx].notebook;
+                        const item = arr.splice(evt.oldIndex, 1)[0];
+                        arr.splice(evt.newIndex, 0, item);
+                        saveToCloud(); renderNotebook();
+                    }
+                }
+            });
+        }
+
+        // Recalcula qual projeto/link está ativo após reordenar
+        function handleIndexShift(activeIdx, oldIdx, newIdx) {
+            if (activeIdx === null) return null;
+            if (activeIdx === oldIdx) return newIdx;
+            if (activeIdx > oldIdx && activeIdx <= newIdx) return activeIdx - 1;
+            if (activeIdx < oldIdx && activeIdx >= newIdx) return activeIdx + 1;
+            return activeIdx;
+        }
+
+        // ==========================================
+        // 4. MOTOR DE LINKS CLICÁVEIS (REGEX)
+        // ==========================================
+        function escapeHTML(str) {
+            return (str || "").replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+
+        function formatNoteContent(text) {
+            let safeText = escapeHTML(text);
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            // Transforma URLs em tags <a> com target _blank
+            return safeText.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 underline font-medium break-all" onclick="event.stopPropagation()">${url}</a>`;
+            });
+        }
+
+        // ==========================================
+        // 5. MOTOR DE ÍCONES CUSTOMIZADOS (PRINT/PASTE)
+        // ==========================================
+        function requestCustomIcon(type, index, event) {
+            event.stopPropagation(); event.preventDefault();
+            awaitingIconFor = { type, index };
+            
+            // Tenta abrir a seleção de arquivos tradicional
+            document.getElementById('icon-file-input').click();
+            
+            // Mostra aviso para colar (Print)
+            const statusText = document.getElementById('cloud-status-text');
+            document.getElementById('cloud-status-icon').className = "fas fa-paste text-blue-400 text-xs";
+            statusText.innerText = "Dê Ctrl+V para colar o Print!";
+            statusText.className = "bg-blue-900/50 text-blue-300 text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wider";
+            
+            setTimeout(() => { if(!awaitingIconFor) return; saveToCloud(); }, 5000); // Reseta aviso após 5s
+        }
+
+        // Ouve o evento de colar imagem na página inteira
+        document.addEventListener('paste', function(e) {
+            if (!awaitingIconFor) return;
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    processImageFile(blob);
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+
+        // Ouve a seleção manual de arquivos
+        document.getElementById('icon-file-input').addEventListener('change', function(e) {
+            if (!awaitingIconFor || !e.target.files[0]) return;
+            processImageFile(e.target.files[0]);
+        });
+
+        // Comprime a imagem para não estourar o Firebase
+        function processImageFile(fileBlob) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_SIZE = 120; // 120x120px é minúsculo e perfeito para ícones
+                    let width = img.width, height = img.height;
+                    
+                    if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                    else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                    
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Transforma em WebP levinho
+                    const compressedBase64 = canvas.toDataURL('image/webp', 0.8);
+                    saveCustomIcon(compressedBase64);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(fileBlob);
+        }
+
+        function saveCustomIcon(base64Data) {
+            if (!awaitingIconFor) return;
+            const { type, index } = awaitingIconFor;
+            if (type === 'tool') tools[index].customIcon = base64Data;
+            if (type === 'project') projects[index].customIcon = base64Data;
+            if (type === 'link') projects[activeProjectIdx].links[index].customIcon = base64Data;
+            
+            awaitingIconFor = null;
+            document.getElementById('icon-file-input').value = "";
+            saveToCloud(); renderTools(); renderProjects();
+        }
+
+        // ==========================================
+        // 6. RENDERIZAÇÃO E INTERFACE
+        // ==========================================
+        function renderTools() {
+            const container = document.getElementById('tools-list');
+            if (!container) return; container.innerHTML = '';
+            tools.forEach((t, i) => {
+                // Verificação de ícone customizado
+                let iconHTML = t.customIcon ? `<img src="${t.customIcon}" class="w-full h-full object-cover">` : `<i class="fas fa-wrench text-purple-400 group-hover/icon:text-purple-300 text-xs"></i>`;
+                
+                container.innerHTML += `
+                    <div class="group relative draggable-item mb-2">
+                        <div class="w-full text-left p-3 rounded-xl bg-[#0F172A] border border-slate-700/50 hover:border-purple-500 transition-all flex items-center gap-3" onclick="window.open('${t.url}', '_blank')">
+                            <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-purple-500/30 transition-all" onclick="requestCustomIcon('tool', ${i}, event)" title="Alterar ícone (Clique ou Cole)">
+                                ${iconHTML}
+                            </div>
+                            <span class="font-medium text-slate-200 text-xs truncate flex-1">${t.name}</span>
+                        </div>
+                        <div class="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-lg border border-slate-600 shadow-lg z-10">
+                            <button onclick="event.preventDefault(); event.stopPropagation(); openToolModal(${i})" class="p-1.5 text-slate-400 hover:text-white"><i class="fas fa-edit text-[10px]"></i></button>
+                            <button onclick="event.preventDefault(); event.stopPropagation(); deleteTool(${i})" class="p-1.5 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+            bindSortable('tools-list', 'tools');
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('project-list');
+            if (!container) return; container.innerHTML = '';
+            
+            projects.forEach((p, i) => {
+                const isActive = i === activeProjectIdx;
+                let iconHTML = p.customIcon ? `<img src="${p.customIcon}" class="w-full h-full object-cover">` : `<i class="fas fa-folder ${isActive ? 'text-blue-400' : 'text-slate-500 group-hover/icon:text-blue-300'}"></i>`;
+                
+                container.innerHTML += `
+                    <div class="group relative draggable-item mb-3">
+                        <button onclick="selectProject(${i})" class="w-full text-left p-3 md:p-4 rounded-xl bg-[#0F172A] border ${isActive ? 'active-project shadow-lg shadow-blue-500/10' : 'border-slate-700/50 opacity-70'} hover:opacity-100 transition-all flex items-center gap-3 md:gap-4">
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-blue-500/30 transition-all" onclick="requestCustomIcon('project', ${i}, event)" title="Alterar ícone (Clique ou Cole)">
+                                ${iconHTML}
+                            </div>
+                            <div class="truncate flex-1">
+                                <p class="font-medium text-slate-200 text-sm truncate">${p.name}</p>
+                                <p class="text-[10px] text-slate-500 truncate">${p.subtitle || ' '}</p>
+                            </div>
+                        </button>
+                        <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-lg border border-slate-600 shadow-lg z-10">
+                            <button onclick="event.stopPropagation(); openProjectModal(${i})" class="p-1 text-slate-400 hover:text-white"><i class="fas fa-edit text-[10px]"></i></button>
+                            <button onclick="event.stopPropagation(); deleteProject(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+            bindSortable('project-list', 'projects');
+            updateCenter();
+        }
+
+        function updateCenter() {
+            const container = document.getElementById('links-list');
+            const nameEl = document.getElementById('active-project-name');
+            const subEl = document.getElementById('active-project-subtitle');
+            
+            if (activeProjectIdx === null || projects.length === 0 || !projects[activeProjectIdx]) {
+                nameEl.innerText = 'Nenhum projeto selecionado'; subEl.innerText = 'Crie um projeto para começar';
+                container.innerHTML = ''; activeLinkIdx = null; renderNotebook(); return;
+            }
+
+            const p = projects[activeProjectIdx];
+            nameEl.innerText = p.name; subEl.innerText = p.subtitle || ''; container.innerHTML = '';
+            if (!p.links) p.links = [];
+
+            p.links.forEach((l, i) => {
+                const isActiveLink = i === activeLinkIdx;
+                let iconHTML = l.customIcon ? `<img src="${l.customIcon}" class="w-full h-full object-cover">` : `<i class="fas fa-link ${isActiveLink ? 'text-emerald-400' : 'text-slate-400 group-hover/icon:text-emerald-300'}"></i>`;
+                
+                container.innerHTML += `
+                    <div class="group draggable-item mb-4 flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border ${isActiveLink ? 'active-link' : 'border-slate-700'} hover:border-emerald-500 transition-all cursor-pointer" onclick="selectLink(${i})">
+                        <div class="flex items-center gap-4 flex-1 overflow-hidden">
+                            <div class="w-10 h-10 md:w-12 md:h-12 ${isActiveLink ? 'bg-emerald-500/20' : 'bg-slate-800'} rounded-lg flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-emerald-500/30 transition-all" onclick="requestCustomIcon('link', ${i}, event)" title="Alterar ícone (Clique ou Cole)">
+                                ${iconHTML}
+                            </div>
+                            <div class="truncate pr-4 flex-1">
+                                <p class="font-semibold text-sm ${isActiveLink ? 'text-emerald-400' : 'text-slate-200'} group-hover:text-emerald-400 truncate transition-colors">${l.title}</p>
+                                <p class="text-[11px] md:text-xs text-slate-500 mt-1 truncate">${l.desc || ''}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 ml-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <a href="${l.url}" target="_blank" onclick="event.stopPropagation()" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-blue-600 transition-colors"><i class="fas fa-external-link-alt text-[10px]"></i></a>
+                            <button onclick="event.stopPropagation(); openLinkModal(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"><i class="fas fa-edit text-[10px]"></i></button>
+                            <button onclick="event.stopPropagation(); deleteLink(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors"><i class="fas fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+            bindSortable('links-list', 'links');
+            renderNotebook();
+        }
+
+        function selectProject(i) { activeProjectIdx = i; activeLinkIdx = null; renderProjects(); }
+        function selectLink(i) { activeLinkIdx = i; updateCenter(); }
+
+        function renderNotebook() {
+            const container = document.getElementById('notebook-container');
+            const addBtn = document.getElementById('add-note-btn');
+            const titleSpan = document.getElementById('active-link-name');
+
+            if (activeProjectIdx === null || activeLinkIdx === null || !projects[activeProjectIdx] || !projects[activeProjectIdx].links || !projects[activeProjectIdx].links[activeLinkIdx]) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Selecione um subprojeto na coluna verde.</div>`;
+                addBtn.classList.add('hidden'); titleSpan.innerText = "Nenhum subprojeto..."; return;
+            }
+
+            const activeLink = projects[activeProjectIdx].links[activeLinkIdx];
+            if (!activeLink.notebook) activeLink.notebook = [];
+            titleSpan.innerText = activeLink.title || 'Caderneta'; addBtn.classList.remove('hidden'); container.innerHTML = '';
+
+            activeLink.notebook.forEach((note, i) => {
+                let icon = note.type === 'task' ? 'fa-check-square' : (note.type === 'reminder' ? 'fa-bell' : 'fa-align-left');
+                let urgencyBadge = note.urgency === 'high' ? `<span class="text-[9px] font-bold bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Urgente</span>` : '';
+                let importanceBadge = note.importance === 'high' ? `<span class="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Importante</span>` : '';
+                let borderClass = 'border-slate-700/50';
+                if (note.urgency === 'high' && note.importance === 'high') borderClass = 'border-red-500/50';
+                else if (note.importance === 'high') borderClass = 'border-amber-500/50';
+
+                // Aplica a formatação de links clicáveis no conteúdo
+                let htmlContent = formatNoteContent(note.content);
+
+                container.innerHTML += `
+                    <div class="group relative draggable-item p-3 mb-3 bg-[#0F172A] border ${borderClass} rounded-xl hover:border-amber-500 transition-all flex flex-col gap-2">
+                        <div class="flex items-start gap-3">
+                            ${note.type === 'task' ? 
+                                `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${note.done ? 'bg-amber-500 border-amber-500' : 'border-slate-500'}">
+                                    ${note.done ? '<i class="fas fa-check text-[#0F172A] text-[10px]"></i>' : ''}
+                                </button>` : `<i class="fas ${icon} text-slate-500 mt-1 text-xs shrink-0"></i>`
+                            }
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[13px] leading-snug whitespace-pre-wrap break-words ${note.done ? 'line-through text-slate-500' : 'text-slate-300'}">${htmlContent}</p>
+                                <div class="flex gap-1.5 mt-2">${importanceBadge}${urgencyBadge}</div>
+                            </div>
+                        </div>
+                        <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-md border border-slate-600 shadow-md z-10">
+                            <button onclick="openNoteModal(${i})" class="p-1 text-slate-400 hover:text-amber-400"><i class="fas fa-edit text-[10px]"></i></button>
+                            <button onclick="deleteNote(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>`;
+            });
+            bindSortable('notebook-container', 'notes');
+        }
+
+        // === MODAIS ===
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+
+        function openToolModal(i = -1) {
+            document.getElementById('edit-tool-index').value = i;
+            if(i > -1) { document.getElementById('tool-name-input').value = tools[i].name; document.getElementById('tool-url-input').value = tools[i].url; } 
+            else { document.getElementById('tool-name-input').value = ''; document.getElementById('tool-url-input').value = ''; }
+            document.getElementById('tool-modal').classList.replace('hidden', 'flex');
+        }
+        function saveTool() {
+            const i = document.getElementById('edit-tool-index').value;
+            const data = { name: document.getElementById('tool-name-input').value, url: document.getElementById('tool-url-input').value, customIcon: i > -1 ? tools[i].customIcon : null };
+            if(i > -1) tools[i] = data; else tools.push(data);
+            closeModal('tool-modal'); saveToCloud(); renderTools();
+        }
+        function deleteTool(i) { if(confirm('Excluir ferramenta?')) { tools.splice(i, 1); saveToCloud(); renderTools(); } }
+
+        function openProjectModal(i = -1) {
+            document.getElementById('edit-project-index').value = i;
+            if(i > -1) { document.getElementById('proj-name-input').value = projects[i].name; document.getElementById('proj-sub-input').value = projects[i].subtitle; } 
+            else { document.getElementById('proj-name-input').value = ''; document.getElementById('proj-sub-input').value = ''; }
+            document.getElementById('project-modal').classList.replace('hidden', 'flex');
+        }
+        function saveProject() {
+            const i = document.getElementById('edit-project-index').value;
+            const data = { name: document.getElementById('proj-name-input').value || 'Novo Projeto', subtitle: document.getElementById('proj-sub-input').value, links: i > -1 ? projects[i].links : [], customIcon: i > -1 ? projects[i].customIcon : null };
+            if(i > -1) projects[i] = data; else { projects.push(data); activeProjectIdx = projects.length - 1; }
+            closeModal('project-modal'); saveToCloud(); renderProjects(); 
+        }
+        function deleteProject(i) { if(confirm('Excluir projeto?')) { projects.splice(i, 1); activeProjectIdx = projects.length > 0 ? 0 : null; saveToCloud(); renderProjects(); } }
+
+        function openLinkModal(i = -1) {
+            document.getElementById('edit-link-index').value = i;
+            if(i > -1) {
+                const l = projects[activeProjectIdx].links[i];
+                document.getElementById('link-title-input').value = l.title; document.getElementById('link-url-input').value = l.url; document.getElementById('link-desc-input').value = l.desc;
+            } else {
+                document.getElementById('link-title-input').value = ''; document.getElementById('link-url-input').value = ''; document.getElementById('link-desc-input').value = '';
+            }
+            document.getElementById('link-modal').classList.replace('hidden', 'flex');
+        }
+        function saveLink() {
+            const i = document.getElementById('edit-link-index').value;
+            const data = { 
+                title: document.getElementById('link-title-input').value || 'Novo Link', url: document.getElementById('link-url-input').value, desc: document.getElementById('link-desc-input').value,
+                notebook: i > -1 ? projects[activeProjectIdx].links[i].notebook : [], customIcon: i > -1 ? projects[activeProjectIdx].links[i].customIcon : null
+            };
+            if(i > -1) projects[activeProjectIdx].links[i] = data; 
+            else { projects[activeProjectIdx].links.push(data); activeLinkIdx = projects[activeProjectIdx].links.length - 1; }
+            closeModal('link-modal'); saveToCloud(); renderProjects(); 
+        }
+        function deleteLink(i) { if(confirm('Excluir subprojeto?')) { projects[activeProjectIdx].links.splice(i, 1); if(activeLinkIdx === i) activeLinkIdx = null; saveToCloud(); renderProjects(); } }
+
+        function openNoteModal(i = -1) {
+            document.getElementById('edit-note-index').value = i;
+            if(i > -1) {
+                const n = projects[activeProjectIdx].links[activeLinkIdx].notebook[i];
+                document.getElementById('note-type').value = n.type; document.getElementById('note-urgency').value = n.urgency; document.getElementById('note-importance').value = n.importance; document.getElementById('note-content').value = n.content;
+            } else {
+                document.getElementById('note-type').value = 'task'; document.getElementById('note-urgency').value = 'normal'; document.getElementById('note-importance').value = 'normal'; document.getElementById('note-content').value = '';
+            }
+            document.getElementById('note-modal').classList.replace('hidden', 'flex');
+        }
+        function saveNote() {
+            const i = document.getElementById('edit-note-index').value;
+            const content = document.getElementById('note-content').value;
+            if(!content.trim()) return;
+            const data = { type: document.getElementById('note-type').value, urgency: document.getElementById('note-urgency').value, importance: document.getElementById('note-importance').value, content: content, done: i > -1 ? projects[activeProjectIdx].links[activeLinkIdx].notebook[i].done : false };
+            if(i > -1) projects[activeProjectIdx].links[activeLinkIdx].notebook[i] = data; else projects[activeProjectIdx].links[activeLinkIdx].notebook.push(data);
+            closeModal('note-modal'); saveToCloud(); renderNotebook(); 
+        }
+        function deleteNote(i) { if(confirm('Excluir anotação?')) { projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1); saveToCloud(); renderNotebook(); } }
+        function toggleNoteDone(i) { const note = projects[activeProjectIdx].links[activeLinkIdx].notebook[i]; note.done = !note.done; saveToCloud(); renderNotebook(); }
+
+        // ==========================================
+        // 7. INICIALIZAÇÃO
+        // ==========================================
+        window.onload = loadFromCloud;
+    </script>
+</body>
+</html>ss">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
