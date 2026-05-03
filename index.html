@@ -33,7 +33,7 @@
             <div class="flex items-center gap-3">
                 <span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Status: Online</span>
             </div>
-            <div class="text-xs text-slate-400">v5.1 • Dados Recuperados</div>
+            <div class="text-xs text-slate-400">v5.2 • Blindagem Anti-Bug</div>
         </div>
     </header>
 
@@ -180,63 +180,73 @@
 
     <script>
         // ==========================================
-        // MOTOR DE RECUPERAÇÃO AUTOMÁTICA DE DADOS
+        // MOTOR DE BLINDAGEM E RECUPERAÇÃO (V5.2)
         // ==========================================
         
         let tools = [];
         let projects = [];
-        let activeProjectIdx = 0;
+        let activeProjectIdx = null;
         let activeLinkIdx = null;
 
-        function checkAndRecoverData() {
-            // 1. Recupera as Ferramentas (Coluna 0)
-            let oldTools = localStorage.getItem('petlojas-v4-tools');
-            let currentTools = localStorage.getItem('petlojas-v5-tools');
-            
-            if (oldTools && !currentTools) {
-                tools = JSON.parse(oldTools);
-                localStorage.setItem('petlojas-v5-tools', JSON.stringify(tools)); // Migrou
-            } else if (currentTools) {
-                tools = JSON.parse(currentTools);
-            }
+        function initializeEcosystem() {
+            try {
+                // 1. CARREGAMENTO BLINDADO DE FERRAMENTAS
+                let savedTools = localStorage.getItem('petlojas-v5-tools') || localStorage.getItem('petlojas-v4-tools');
+                if (savedTools) tools = JSON.parse(savedTools);
+                if (!Array.isArray(tools)) tools = [];
 
-            // 2. Recupera os Projetos e Links (Colunas 1 e 2)
-            let oldProjects = localStorage.getItem('petlojas-v3-data'); // Seus dados criados nas versoes anteriores estão aqui
-            let currentProjects = localStorage.getItem('petlojas-v5-data');
-            
-            // Verifica se a gente PRECISA resgatar os dados antigos
-            if (oldProjects && !localStorage.getItem('petlojas-migrated-to-v5')) {
-                projects = JSON.parse(oldProjects);
-                
-                // Prepara os projetos antigos para aceitarem a caderneta nova
-                projects.forEach(p => {
-                    if(p.links) {
-                        p.links.forEach(l => {
-                            if(!l.notebook) l.notebook = [];
-                        });
-                    } else {
-                        p.links = [];
+                // 2. CARREGAMENTO BLINDADO DE PROJETOS
+                let p5 = localStorage.getItem('petlojas-v5-data');
+                let p3 = localStorage.getItem('petlojas-v3-data');
+                let p2 = localStorage.getItem('petlojas-projects'); // Da versão 2.0 (strings)
+
+                if (p5) {
+                    projects = JSON.parse(p5);
+                } else if (p3) {
+                    projects = JSON.parse(p3);
+                } else if (p2) {
+                    // Migração de segurança extrema caso a pessoa só tenha dados da V2
+                    let oldStrArr = JSON.parse(p2);
+                    if (Array.isArray(oldStrArr)) {
+                        projects = oldStrArr.map(name => ({ name: typeof name === 'string' ? name : "Projeto", subtitle: "", links: [] }));
                     }
+                }
+
+                if (!Array.isArray(projects)) projects = [];
+
+                // 3. SANITIZAÇÃO (Onde o Crash acontecia)
+                // Vamos garantir que TODAS as propriedades de arrays existam para o código não quebrar.
+                projects.forEach(p => {
+                    if (!p.name) p.name = "Projeto Recuperado";
+                    if (!p.links || !Array.isArray(p.links)) p.links = []; // Impede o Crash "p.links is undefined"
+                    
+                    p.links.forEach(l => {
+                        if (!l.notebook || !Array.isArray(l.notebook)) l.notebook = []; // Impede o Crash da Caderneta
+                    });
                 });
 
-                // Confirma que resgatou e salva no novo formato!
+                // Define o projeto ativo inicial se houver algum
+                if (projects.length > 0) activeProjectIdx = 0;
+
+                // Salva imediatamente o banco de dados limpo e estruturado
+                localStorage.setItem('petlojas-v5-tools', JSON.stringify(tools));
                 localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
-                localStorage.setItem('petlojas-migrated-to-v5', 'true');
-            } else if (currentProjects) {
-                projects = JSON.parse(currentProjects);
-            } else {
-                // Caso seja uma pessoa abrindo pela 1ª vez sem nenhum dado antigo
-                projects = [{ name: "CRM PetLojas", subtitle: "Gestão", links: [] }];
+
+            } catch (error) {
+                console.error("Bug Interceptado! Detalhes:", error);
+                // Se tudo falhar (dados corrompidos além de reparo), abre vazio mas NÃO quebra a tela.
+                projects = [];
+                tools = [];
             }
         }
 
-        // Executa o resgate imediatamente
-        checkAndRecoverData();
-
+        // RODA O MOTOR DE BLINDAGEM ANTES DE DESENHAR QUALQUER COISA
+        initializeEcosystem();
 
         // === FUNÇÕES DE RENDERIZAÇÃO ===
         function renderTools() {
             const container = document.getElementById('tools-list');
+            if (!container) return;
             container.innerHTML = '';
             tools.forEach((t, i) => {
                 container.innerHTML += `
@@ -245,7 +255,7 @@
                             <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-colors">
                                 <i class="fas fa-wrench text-purple-400 group-hover:text-white text-xs"></i>
                             </div>
-                            <span class="font-medium text-slate-200 text-xs truncate">${t.name}</span>
+                            <span class="font-medium text-slate-200 text-xs truncate">${t.name || 'Link'}</span>
                         </a>
                         <div class="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-lg border border-slate-600 shadow-lg z-10">
                             <button onclick="event.preventDefault(); event.stopPropagation(); openToolModal(${i})" class="p-1.5 text-slate-400 hover:text-white"><i class="fas fa-edit text-[10px]"></i></button>
@@ -258,12 +268,12 @@
 
         function renderProjects() {
             const container = document.getElementById('project-list');
+            if (!container) return;
             container.innerHTML = '';
             
-            if(projects.length === 0) activeProjectIdx = null;
+            if (projects.length === 0) activeProjectIdx = null;
 
             projects.forEach((p, i) => {
-                p.links.forEach(l => { if(!l.notebook) l.notebook = []; }); // Garante a caderneta
                 const isActive = i === activeProjectIdx;
                 container.innerHTML += `
                     <div class="group relative">
@@ -273,7 +283,7 @@
                             </div>
                             <div class="truncate">
                                 <p class="font-medium text-slate-200 text-sm truncate">${p.name}</p>
-                                <p class="text-[10px] text-slate-500 truncate">${p.subtitle || ''}</p>
+                                <p class="text-[10px] text-slate-500 truncate">${p.subtitle || ' '}</p>
                             </div>
                         </button>
                         <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-lg border border-slate-600 shadow-lg">
@@ -289,20 +299,35 @@
         function selectProject(i) { activeProjectIdx = i; activeLinkIdx = null; renderProjects(); }
 
         function updateCenter() {
-            if (activeProjectIdx === null || !projects[activeProjectIdx]) {
-                document.getElementById('active-project-name').innerText = 'Nenhum projeto';
-                document.getElementById('active-project-subtitle').innerText = '';
-                document.getElementById('links-list').innerHTML = '';
+            const container = document.getElementById('links-list');
+            const nameEl = document.getElementById('active-project-name');
+            const subEl = document.getElementById('active-project-subtitle');
+            
+            if (!container || !nameEl) return;
+
+            // Tratamento blindado se não houver projeto
+            if (activeProjectIdx === null || projects.length === 0 || !projects[activeProjectIdx]) {
+                nameEl.innerText = 'Nenhum projeto selecionado';
+                subEl.innerText = 'Crie um projeto para começar';
+                container.innerHTML = '';
+                activeLinkIdx = null;
                 renderNotebook();
                 return;
             }
 
             const p = projects[activeProjectIdx];
-            document.getElementById('active-project-name').innerText = p.name;
-            document.getElementById('active-project-subtitle').innerText = p.subtitle;
+            nameEl.innerText = p.name;
+            subEl.innerText = p.subtitle || '';
             
-            const container = document.getElementById('links-list');
             container.innerHTML = '';
+            
+            // Tratamento blindado caso links seja inexistente
+            if (!p.links || !Array.isArray(p.links)) p.links = [];
+
+            if (p.links.length === 0) {
+                 container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Este projeto ainda não tem links ou subprojetos.<br>Clique no botão verde (+) para adicionar.</div>`;
+            }
+
             p.links.forEach((l, i) => {
                 const isActiveLink = i === activeLinkIdx;
                 container.innerHTML += `
@@ -313,7 +338,7 @@
                             </div>
                             <div class="truncate pr-4">
                                 <p class="font-semibold text-sm ${isActiveLink ? 'text-emerald-400' : 'text-slate-200'} group-hover:text-emerald-400 truncate transition-colors">${l.title}</p>
-                                <p class="text-[11px] md:text-xs text-slate-500 mt-1 truncate">${l.desc}</p>
+                                <p class="text-[11px] md:text-xs text-slate-500 mt-1 truncate">${l.desc || ''}</p>
                             </div>
                         </div>
                         <div class="flex gap-2 ml-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -333,20 +358,26 @@
             const addBtn = document.getElementById('add-note-btn');
             const titleSpan = document.getElementById('active-link-name');
 
-            if (activeLinkIdx === null || !projects[activeProjectIdx] || !projects[activeProjectIdx].links[activeLinkIdx]) {
-                container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Selecione um subprojeto na coluna central.</div>`;
+            if (!container) return;
+
+            // Blindagem: Se não houver nada selecionado
+            if (activeProjectIdx === null || activeLinkIdx === null || !projects[activeProjectIdx] || !projects[activeProjectIdx].links || !projects[activeProjectIdx].links[activeLinkIdx]) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Selecione um subprojeto (link) na coluna verde para abrir a caderneta.</div>`;
                 addBtn.classList.add('hidden');
-                titleSpan.innerText = "Selecione um subprojeto...";
+                titleSpan.innerText = "Nenhum subprojeto...";
                 return;
             }
 
             const activeLink = projects[activeProjectIdx].links[activeLinkIdx];
-            titleSpan.innerText = activeLink.title;
+            // Sanitização de segurança
+            if (!activeLink.notebook || !Array.isArray(activeLink.notebook)) activeLink.notebook = [];
+
+            titleSpan.innerText = activeLink.title || 'Caderneta';
             addBtn.classList.remove('hidden');
             container.innerHTML = '';
 
             if (activeLink.notebook.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-500 text-[11px] mt-10 italic">Caderneta vazia. Clique no botão amarelo.</div>`;
+                container.innerHTML = `<div class="text-center text-slate-500 text-[11px] mt-10 italic">Caderneta vazia.<br>Clique no botão laranja (+) para adicionar.</div>`;
             } else {
                 activeLink.notebook.forEach((note, i) => {
                     let icon = note.type === 'task' ? 'fa-check-square' : (note.type === 'reminder' ? 'fa-bell' : 'fa-align-left');
@@ -360,4 +391,127 @@
                         <div class="group relative p-3 bg-[#0F172A] border ${borderClass} rounded-xl hover:border-amber-500 transition-all flex flex-col gap-2">
                             <div class="flex items-start gap-3">
                                 ${note.type === 'task' ? 
-                                    `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-
+                                    `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${note.done ? 'bg-amber-500 border-amber-500' : 'border-slate-500'}">
+                                        ${note.done ? '<i class="fas fa-check text-[#0F172A] text-[10px]"></i>' : ''}
+                                    </button>` : `<i class="fas ${icon} text-slate-500 mt-1 text-xs shrink-0"></i>`
+                                }
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] leading-snug whitespace-pre-wrap break-words ${note.done ? 'line-through text-slate-500' : 'text-slate-300'}">${note.content}</p>
+                                    <div class="flex gap-1.5 mt-2">${importanceBadge}${urgencyBadge}</div>
+                                </div>
+                            </div>
+                            <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-md border border-slate-600 shadow-md">
+                                <button onclick="openNoteModal(${i})" class="p-1 text-slate-400 hover:text-amber-400"><i class="fas fa-edit text-[10px]"></i></button>
+                                <button onclick="deleteNote(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>`;
+                });
+            }
+            localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
+        }
+
+        // === MODAIS ===
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+
+        function openToolModal(i = -1) {
+            document.getElementById('edit-tool-index').value = i;
+            if(i > -1) {
+                document.getElementById('tool-name-input').value = tools[i].name;
+                document.getElementById('tool-url-input').value = tools[i].url;
+            } else {
+                document.getElementById('tool-name-input').value = '';
+                document.getElementById('tool-url-input').value = '';
+            }
+            document.getElementById('tool-modal').classList.replace('hidden', 'flex');
+        }
+        function saveTool() {
+            const i = document.getElementById('edit-tool-index').value;
+            const data = { name: document.getElementById('tool-name-input').value, url: document.getElementById('tool-url-input').value };
+            if(i > -1) tools[i] = data; else tools.push(data);
+            closeModal('tool-modal'); renderTools();
+        }
+        function deleteTool(i) { if(confirm('Excluir ferramenta?')) { tools.splice(i, 1); renderTools(); } }
+
+        function openProjectModal(i = -1) {
+            document.getElementById('edit-project-index').value = i;
+            if(i > -1) {
+                document.getElementById('proj-name-input').value = projects[i].name;
+                document.getElementById('proj-sub-input').value = projects[i].subtitle;
+            } else {
+                document.getElementById('proj-name-input').value = '';
+                document.getElementById('proj-sub-input').value = '';
+            }
+            document.getElementById('project-modal').classList.replace('hidden', 'flex');
+        }
+        function saveProject() {
+            const i = document.getElementById('edit-project-index').value;
+            const data = { name: document.getElementById('proj-name-input').value || 'Novo Projeto', subtitle: document.getElementById('proj-sub-input').value, links: i > -1 ? projects[i].links : [] };
+            if(i > -1) projects[i] = data; else { projects.push(data); activeProjectIdx = projects.length - 1; }
+            closeModal('project-modal'); renderProjects();
+        }
+        function deleteProject(i) { if(confirm('Excluir projeto?')) { projects.splice(i, 1); activeProjectIdx = projects.length > 0 ? 0 : null; renderProjects(); } }
+
+        function openLinkModal(i = -1) {
+            document.getElementById('edit-link-index').value = i;
+            if(i > -1) {
+                const l = projects[activeProjectIdx].links[i];
+                document.getElementById('link-title-input').value = l.title;
+                document.getElementById('link-url-input').value = l.url;
+                document.getElementById('link-desc-input').value = l.desc;
+            } else {
+                document.getElementById('link-title-input').value = '';
+                document.getElementById('link-url-input').value = '';
+                document.getElementById('link-desc-input').value = '';
+            }
+            document.getElementById('link-modal').classList.replace('hidden', 'flex');
+        }
+        function saveLink() {
+            const i = document.getElementById('edit-link-index').value;
+            const data = { 
+                title: document.getElementById('link-title-input').value || 'Novo Link', 
+                url: document.getElementById('link-url-input').value, 
+                desc: document.getElementById('link-desc-input').value,
+                notebook: i > -1 ? projects[activeProjectIdx].links[i].notebook : []
+            };
+            if(i > -1) projects[activeProjectIdx].links[i] = data; 
+            else { projects[activeProjectIdx].links.push(data); activeLinkIdx = projects[activeProjectIdx].links.length - 1; }
+            closeModal('link-modal'); renderProjects();
+        }
+        function deleteLink(i) { if(confirm('Excluir subprojeto?')) { projects[activeProjectIdx].links.splice(i, 1); if(activeLinkIdx === i) activeLinkIdx = null; renderProjects(); } }
+
+        function openNoteModal(i = -1) {
+            document.getElementById('edit-note-index').value = i;
+            if(i > -1) {
+                const n = projects[activeProjectIdx].links[activeLinkIdx].notebook[i];
+                document.getElementById('note-type').value = n.type;
+                document.getElementById('note-urgency').value = n.urgency;
+                document.getElementById('note-importance').value = n.importance;
+                document.getElementById('note-content').value = n.content;
+            } else {
+                document.getElementById('note-type').value = 'task';
+                document.getElementById('note-urgency').value = 'normal';
+                document.getElementById('note-importance').value = 'normal';
+                document.getElementById('note-content').value = '';
+            }
+            document.getElementById('note-modal').classList.replace('hidden', 'flex');
+        }
+        function saveNote() {
+            const i = document.getElementById('edit-note-index').value;
+            const content = document.getElementById('note-content').value;
+            if(!content.trim()) return;
+            const data = { 
+                type: document.getElementById('note-type').value, urgency: document.getElementById('note-urgency').value, importance: document.getElementById('note-importance').value, content: content,
+                done: i > -1 ? projects[activeProjectIdx].links[activeLinkIdx].notebook[i].done : false
+            };
+            if(i > -1) projects[activeProjectIdx].links[activeLinkIdx].notebook[i] = data; else projects[activeProjectIdx].links[activeLinkIdx].notebook.push(data);
+            closeModal('note-modal'); renderNotebook();
+        }
+        function deleteNote(i) { if(confirm('Excluir anotação?')) { projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1); renderNotebook(); } }
+        function toggleNoteDone(i) { const note = projects[activeProjectIdx].links[activeLinkIdx].notebook[i]; note.done = !note.done; renderNotebook(); }
+
+        // INICIA O SISTEMA
+        renderTools();
+        renderProjects(); 
+    </script>
+</body>
+</html>
