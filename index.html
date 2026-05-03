@@ -8,25 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-        }
-
-        /* Estilização da barra de rolagem para combinar com o tema escuro */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #475569; 
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; 
-        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .active-project { border-color: #3b82f6 !important; background-color: #1e293b !important; opacity: 1 !important; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-[#0F172A] text-slate-200 flex flex-col">
@@ -44,11 +31,8 @@
         <div class="text-right flex flex-col items-end gap-1">
             <div class="flex items-center gap-3">
                 <span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Status: Online</span>
-                <button onclick="openConfig()" class="text-slate-400 hover:text-white transition-colors" title="Editar Projetos">
-                    <i class="fas fa-cog text-lg"></i>
-                </button>
             </div>
-            <div class="text-xs text-slate-400">v2.1 • Tela Cheia</div>
+            <div class="text-xs text-slate-400">v3.0 • 100% Editável</div>
         </div>
     </header>
 
@@ -57,267 +41,220 @@
         <section class="md:col-span-3 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
             <div class="p-5 border-b border-slate-700/50 shrink-0 flex justify-between items-center">
                 <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Meus Projetos</h3>
+                <button onclick="openProjectModal()" class="w-8 h-8 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg shadow-blue-600/20">
+                    <i class="fas fa-plus text-xs"></i>
+                </button>
             </div>
-            
-            <div id="project-list" class="p-4 flex-1 overflow-y-auto space-y-3">
-                </div>
+            <div id="project-list" class="p-4 flex-1 overflow-y-auto space-y-3"></div>
         </section>
 
         <section class="md:col-span-5 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
-            <div class="p-6 border-b border-slate-700/50 shrink-0">
-                <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-bold uppercase tracking-wider">Projeto Ativo</span>
-                <h2 id="active-project-name" class="text-2xl font-bold text-white mt-2">Carregando...</h2>
+            <div class="p-6 border-b border-slate-700/50 shrink-0 flex justify-between items-start">
+                <div>
+                    <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-bold uppercase tracking-wider">Projeto Ativo</span>
+                    <h2 id="active-project-name" class="text-2xl font-bold text-white mt-2">---</h2>
+                    <p id="active-project-subtitle" class="text-xs text-slate-400 mt-1">---</p>
+                </div>
+                <button onclick="openLinkModal()" class="w-10 h-10 bg-green-600 hover:bg-green-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg shadow-green-600/20">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
-
-            <div class="p-6 flex-1 overflow-y-auto space-y-4">
-                <a href="#" class="group flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-slate-700 hover:border-slate-500 transition-all">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center group-hover:bg-slate-700 transition-colors">
-                            <i class="fab fa-github text-2xl text-slate-300 group-hover:text-white"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-sm text-slate-200 group-hover:text-white">Repositório GitHub</p>
-                            <p class="text-xs text-slate-400 mt-1">Acessar código fonte do projeto</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-right text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all"></i>
-                </a>
-
-                <a href="#" class="group flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-slate-700 hover:border-white transition-all">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center group-hover:bg-white transition-colors">
-                            <i class="fas fa-caret-up text-3xl text-slate-300 group-hover:text-black"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-sm text-slate-200 group-hover:text-white">Vercel Deployment</p>
-                            <p class="text-xs text-slate-400 mt-1">Status da produção e deploy</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-right text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all"></i>
-                </a>
-
-                <a href="#" class="group flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-slate-700 hover:border-orange-500 transition-all">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center group-hover:bg-orange-500 transition-colors">
-                            <i class="fas fa-database text-xl text-slate-300 group-hover:text-white"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-sm text-slate-200 group-hover:text-white">Firebase Console</p>
-                            <p class="text-xs text-slate-400 mt-1">Banco de dados e autenticação</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-right text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all"></i>
-                </a>
-
-                <a href="#" class="group flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-slate-700 hover:border-green-500 transition-all">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center group-hover:bg-green-500 transition-colors">
-                            <i class="fab fa-whatsapp text-2xl text-slate-300 group-hover:text-white"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-sm text-slate-200 group-hover:text-white">Testar Fluxo WhatsApp</p>
-                            <p class="text-xs text-slate-400 mt-1">Link de atendimento nativo</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-right text-slate-500 group-hover:text-white group-hover:translate-x-1 transition-all"></i>
-                </a>
-            </div>
+            <div id="links-list" class="p-6 flex-1 overflow-y-auto space-y-4"></div>
         </section>
 
         <section class="md:col-span-4 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
             <div class="p-6 border-b border-slate-700/50 shrink-0">
                 <h3 class="font-bold text-white flex items-center gap-2">
-                    <i class="fas fa-tasks text-blue-400"></i>
-                    Checklist Operacional
+                    <i class="fas fa-tasks text-blue-400"></i> Checklist Operacional
                 </h3>
             </div>
-            
             <div class="p-6 flex-1 overflow-y-auto">
-                <div id="checklist-container" class="space-y-3">
-                    </div>
+                <div id="checklist-container" class="space-y-3"></div>
             </div>
-
             <div class="p-5 bg-[#0F172A] border-t border-slate-700/50 shrink-0">
                 <div class="relative">
-                    <input type="text" id="new-task" placeholder="Adicionar nova tarefa..." class="w-full p-3 pl-4 pr-10 bg-[#1E293B] border border-slate-600 text-slate-200 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-slate-500 transition-all">
-                    <button onclick="addTaskFromInput()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-blue-500">
-                        <i class="fas fa-plus-circle text-lg"></i>
-                    </button>
+                    <input type="text" id="new-task" placeholder="Nova tarefa..." class="w-full p-3 bg-[#1E293B] border border-slate-600 text-slate-200 text-sm rounded-xl focus:outline-none focus:border-blue-500">
                 </div>
             </div>
         </section>
     </main>
 
-    <div id="config-modal" class="fixed inset-0 bg-[#0F172A]/80 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i class="fas fa-sliders-h text-blue-500"></i> Configurar Projetos
-                </h2>
-                <button onclick="closeConfig()" class="text-slate-400 hover:text-white transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
+    <div id="project-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6">
+            <h2 id="project-modal-title" class="text-xl font-bold text-white mb-6">Novo Projeto</h2>
             <div class="space-y-4">
+                <input type="hidden" id="edit-project-index">
                 <div>
-                    <label class="block text-xs font-semibold text-blue-400 uppercase tracking-wider mb-1">Projeto 1 (Azul)</label>
-                    <input type="text" id="edit-proj-1" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 text-sm rounded-lg focus:outline-none focus:border-blue-500">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome do Projeto</label>
+                    <input type="text" id="proj-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-green-400 uppercase tracking-wider mb-1">Projeto 2 (Verde)</label>
-                    <input type="text" id="edit-proj-2" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 text-sm rounded-lg focus:outline-none focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1">Projeto 3 (Laranja)</label>
-                    <input type="text" id="edit-proj-3" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 text-sm rounded-lg focus:outline-none focus:border-orange-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1">Projeto 4 (Roxo)</label>
-                    <input type="text" id="edit-proj-4" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 text-sm rounded-lg focus:outline-none focus:border-purple-500">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Subtítulo / Descrição</label>
+                    <input type="text" id="proj-sub-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500">
                 </div>
             </div>
-
             <div class="mt-8 flex justify-end gap-3">
-                <button onclick="closeConfig()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-[#0F172A] transition-colors">Cancelar</button>
-                <button onclick="saveConfig()" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors">Salvar Alterações</button>
+                <button onclick="closeModal('project-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
+                <button onclick="saveProject()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="link-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6">
+            <h2 id="link-modal-title" class="text-xl font-bold text-white mb-6">Novo Link</h2>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-link-index">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Título do Link</label>
+                    <input type="text" id="link-title-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Endereço)</label>
+                    <input type="text" id="link-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Descrição Curta</label>
+                    <input type="text" id="link-desc-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500">
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal('link-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
+                <button onclick="saveLink()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Salvar Link</button>
             </div>
         </div>
     </div>
 
     <script>
-        // === SISTEMA DE PROJETOS ===
-        // Nomes padrão ou busca no LocalStorage
-        let projectNames = JSON.parse(localStorage.getItem('petlojas-projects')) || [
-            "CRM PetLojas",
-            "Disparo Five",
-            "GV na Mão",
-            "Landing Page"
+        let projects = JSON.parse(localStorage.getItem('petlojas-v3-data')) || [
+            { name: "CRM PetLojas", subtitle: "Gestão de Leads e Funil", links: [{title: "GitHub", url: "#", desc: "Repositório principal"}] }
         ];
-        
-        let activeProjectIndex = 0;
+        let activeIdx = 0;
 
         function renderProjects() {
             const container = document.getElementById('project-list');
-            
-            // As classes exatas que estavam no HTML original para manter o visual intocável
-            const styles = [
-                { icon: "fa-users", colorClass: "text-blue-400", bgIcon: "bg-blue-500/10", hoverIcon: "group-hover:bg-blue-500", borderHover: "hover:border-blue-500", borderActive: "border-blue-500/30" },
-                { icon: "fa-paper-plane", colorClass: "text-green-400", bgIcon: "bg-green-500/10", hoverIcon: "group-hover:bg-green-500", borderHover: "hover:border-green-500", borderActive: "border-slate-700/50" },
-                { icon: "fa-map-marked-alt", colorClass: "text-orange-400", bgIcon: "bg-orange-500/10", hoverIcon: "group-hover:bg-orange-500", borderHover: "hover:border-orange-500", borderActive: "border-slate-700/50" },
-                { icon: "fa-laptop-code", colorClass: "text-purple-400", bgIcon: "bg-purple-500/10", hoverIcon: "group-hover:bg-purple-500", borderHover: "hover:border-purple-500", borderActive: "border-slate-700/50" }
-            ];
-
             container.innerHTML = '';
-            
-            projectNames.forEach((name, index) => {
-                const s = styles[index];
-                // Se for o projeto ativo, aplica um visual diferente (opcional da V2)
-                const isActive = activeProjectIndex === index;
-                const activeStyle = isActive ? s.borderActive : "border-slate-700/50 opacity-70 hover:opacity-100";
-                
+            projects.forEach((p, i) => {
+                const isActive = i === activeIdx;
                 container.innerHTML += `
-                    <button onclick="selectProject(${index})" class="w-full text-left p-4 rounded-xl bg-[#0F172A] border ${activeStyle} ${s.borderHover} hover:bg-[#1e293b] transition-all flex items-center gap-4 group">
-                        <div class="w-10 h-10 rounded-full ${s.bgIcon} flex items-center justify-center ${s.hoverIcon} transition-colors">
-                            <i class="fas ${s.icon} ${s.colorClass} group-hover:text-white transition-colors"></i>
-                        </div>
-                        <span class="font-medium text-slate-200 truncate w-full">${name}</span>
-                    </button>
-                `;
-            });
-
-            // Atualiza o título central
-            document.getElementById('active-project-name').innerText = projectNames[activeProjectIndex];
-        }
-
-        function selectProject(index) {
-            activeProjectIndex = index;
-            renderProjects(); // Re-renderiza para mudar o estilo do botão ativo
-        }
-
-        // === MODAL DE CONFIGURAÇÕES ===
-        function openConfig() {
-            document.getElementById('edit-proj-1').value = projectNames[0];
-            document.getElementById('edit-proj-2').value = projectNames[1];
-            document.getElementById('edit-proj-3').value = projectNames[2];
-            document.getElementById('edit-proj-4').value = projectNames[3];
-            document.getElementById('config-modal').classList.remove('hidden');
-            document.getElementById('config-modal').classList.add('flex');
-        }
-
-        function closeConfig() {
-            document.getElementById('config-modal').classList.add('hidden');
-            document.getElementById('config-modal').classList.remove('flex');
-        }
-
-        function saveConfig() {
-            projectNames[0] = document.getElementById('edit-proj-1').value || "Projeto 1";
-            projectNames[1] = document.getElementById('edit-proj-2').value || "Projeto 2";
-            projectNames[2] = document.getElementById('edit-proj-3').value || "Projeto 3";
-            projectNames[3] = document.getElementById('edit-proj-4').value || "Projeto 4";
-            
-            localStorage.setItem('petlojas-projects', JSON.stringify(projectNames));
-            renderProjects();
-            closeConfig();
-        }
-
-        // === LÓGICA DO CHECKLIST (Intacta) ===
-        const tasks = JSON.parse(localStorage.getItem('petlojas-tasks-v2')) || [
-            { text: 'Finalizar Landing Page', done: false },
-            { text: 'Ajustar cálculo da isenção no Checkout', done: true },
-            { text: 'Testar disparo nativo', done: false }
-        ];
-
-        function renderTasks() {
-            const container = document.getElementById('checklist-container');
-            container.innerHTML = '';
-            tasks.forEach((task, index) => {
-                container.innerHTML += `
-                    <div class="group flex items-start gap-3 p-3 bg-[#0F172A] border border-slate-700/50 hover:border-slate-600 rounded-xl transition-all cursor-pointer" onclick="toggleTask(${index})">
-                        <div class="mt-0.5 w-5 h-5 rounded border ${task.done ? 'bg-blue-500 border-blue-500 flex items-center justify-center' : 'border-slate-500 bg-[#1E293B]'} transition-colors shrink-0">
-                            ${task.done ? '<i class="fas fa-check text-white text-[10px]"></i>' : ''}
-                        </div>
-                        <span class="text-sm leading-tight mt-0.5 ${task.done ? 'line-through text-slate-500' : 'text-slate-300 group-hover:text-white'} transition-colors">
-                            ${task.text}
-                        </span>
-                        <button onclick="deleteTask(event, ${index})" class="ml-auto opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all">
-                            <i class="fas fa-trash text-xs"></i>
+                    <div class="group relative">
+                        <button onclick="selectProject(${i})" class="w-full text-left p-4 rounded-xl bg-[#0F172A] border ${isActive ? 'active-project' : 'border-slate-700/50 opacity-70'} hover:opacity-100 transition-all flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                <i class="fas fa-folder ${isActive ? 'text-blue-400' : 'text-slate-500'}"></i>
+                            </div>
+                            <div class="truncate">
+                                <p class="font-medium text-slate-200 truncate">${p.name}</p>
+                                <p class="text-[10px] text-slate-500 truncate">${p.subtitle || 'Sem subtítulo'}</p>
+                            </div>
                         </button>
-                    </div>
-                `;
+                        <div class="absolute right-2 top-2 hidden group-hover:flex gap-1">
+                            <button onclick="openProjectModal(${i})" class="p-1 text-slate-500 hover:text-white"><i class="fas fa-edit text-[10px]"></i></button>
+                            <button onclick="deleteProject(${i})" class="p-1 text-slate-500 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                        </div>
+                    </div>`;
             });
-            localStorage.setItem('petlojas-tasks-v2', JSON.stringify(tasks));
+            updateCenter();
+            localStorage.setItem('petlojas-v3-data', JSON.stringify(projects));
         }
 
-        function toggleTask(index) {
-            tasks[index].done = !tasks[index].done;
-            renderTasks();
+        function updateCenter() {
+            const p = projects[activeIdx] || {name: 'Nenhum projeto', subtitle: '', links: []};
+            document.getElementById('active-project-name').innerText = p.name;
+            document.getElementById('active-project-subtitle').innerText = p.subtitle;
+            
+            const container = document.getElementById('links-list');
+            container.innerHTML = '';
+            p.links.forEach((l, i) => {
+                container.innerHTML += `
+                    <div class="group flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-slate-700 hover:border-slate-500 transition-all">
+                        <a href="${l.url}" target="_blank" class="flex items-center gap-4 flex-1">
+                            <div class="w-12 h-12 bg-slate-800 rounded-lg flex items-center justify-center"><i class="fas fa-link text-slate-400"></i></div>
+                            <div>
+                                <p class="font-semibold text-sm text-slate-200">${l.title}</p>
+                                <p class="text-xs text-slate-500 mt-1">${l.desc}</p>
+                            </div>
+                        </a>
+                        <div class="flex gap-3 ml-4">
+                            <button onclick="openLinkModal(${i})" class="text-slate-500 hover:text-blue-400"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteLink(${i})" class="text-slate-500 hover:text-red-400"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            });
         }
 
-        function deleteTask(event, index) {
-            event.stopPropagation();
-            tasks.splice(index, 1);
-            renderTasks();
-        }
+        function selectProject(i) { activeIdx = i; renderProjects(); }
 
-        function addTaskFromInput() {
-            const input = document.getElementById('new-task');
-            if (input.value.trim()) {
-                tasks.push({ text: input.value.trim(), done: false });
-                input.value = '';
-                renderTasks();
+        // MODAL HELPERS
+        function openProjectModal(i = -1) {
+            document.getElementById('edit-project-index').value = i;
+            if(i > -1) {
+                document.getElementById('proj-name-input').value = projects[i].name;
+                document.getElementById('proj-sub-input').value = projects[i].subtitle;
+                document.getElementById('project-modal-title').innerText = "Editar Projeto";
+            } else {
+                document.getElementById('proj-name-input').value = '';
+                document.getElementById('proj-sub-input').value = '';
+                document.getElementById('project-modal-title').innerText = "Novo Projeto";
             }
+            document.getElementById('project-modal').classList.replace('hidden', 'flex');
         }
 
-        document.getElementById('new-task').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addTaskFromInput();
+        function openLinkModal(i = -1) {
+            document.getElementById('edit-link-index').value = i;
+            if(i > -1) {
+                const l = projects[activeIdx].links[i];
+                document.getElementById('link-title-input').value = l.title;
+                document.getElementById('link-url-input').value = l.url;
+                document.getElementById('link-desc-input').value = l.desc;
+                document.getElementById('link-modal-title').innerText = "Editar Link";
+            } else {
+                document.getElementById('link-title-input').value = '';
+                document.getElementById('link-url-input').value = '';
+                document.getElementById('link-desc-input').value = '';
+                document.getElementById('link-modal-title').innerText = "Novo Link";
             }
-        });
+            document.getElementById('link-modal').classList.replace('hidden', 'flex');
+        }
 
-        // === INICIALIZAÇÃO ===
-        renderProjects();
-        renderTasks();
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+
+        function saveProject() {
+            const i = document.getElementById('edit-project-index').value;
+            const data = { name: document.getElementById('proj-name-input').value, subtitle: document.getElementById('proj-sub-input').value, links: i > -1 ? projects[i].links : [] };
+            if(i > -1) projects[i] = data; else { projects.push(data); activeIdx = projects.length - 1; }
+            closeModal('project-modal'); renderProjects();
+        }
+
+        function deleteProject(i) { if(confirm('Excluir projeto?')) { projects.splice(i, 1); activeIdx = 0; renderProjects(); } }
+
+        function saveLink() {
+            const i = document.getElementById('edit-link-index').value;
+            const data = { title: document.getElementById('link-title-input').value, url: document.getElementById('link-url-input').value, desc: document.getElementById('link-desc-input').value };
+            if(i > -1) projects[activeIdx].links[i] = data; else projects[activeIdx].links.push(data);
+            closeModal('link-modal'); renderProjects();
+        }
+
+        function deleteLink(i) { projects[activeIdx].links.splice(i, 1); renderProjects(); }
+
+        // CHECKLIST
+        let tasks = JSON.parse(localStorage.getItem('tasks-v3')) || [{text: 'Configurar projetos', done: false}];
+        function renderTasks() {
+            const c = document.getElementById('checklist-container');
+            c.innerHTML = '';
+            tasks.forEach((t, i) => {
+                c.innerHTML += `<div onclick="toggleTask(${i})" class="flex items-center gap-3 p-3 bg-[#0F172A] border border-slate-700/50 rounded-xl cursor-pointer">
+                    <div class="w-5 h-5 rounded border ${t.done ? 'bg-blue-500 border-blue-500 flex items-center justify-center' : 'border-slate-500'}">
+                        ${t.done ? '<i class="fas fa-check text-white text-[10px]"></i>' : ''}
+                    </div>
+                    <span class="text-sm ${t.done ? 'line-through text-slate-500' : 'text-slate-300'}">${t.text}</span>
+                </div>`;
+            });
+            localStorage.setItem('tasks-v3', JSON.stringify(tasks));
+        }
+        function toggleTask(i) { tasks[i].done = !tasks[i].done; renderTasks(); }
+        document.getElementById('new-task').onkeypress = (e) => { if(e.key==='Enter' && e.target.value) { tasks.push({text: e.target.value, done: false}); e.target.value=''; renderTasks(); } };
+
+        renderProjects(); renderTasks();
     </script>
 </body>
 </html>
