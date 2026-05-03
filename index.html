@@ -48,7 +48,7 @@
                 <i id="cloud-status-icon" class="fas fa-cloud-upload-alt text-slate-500 text-xs"></i>
                 <span id="cloud-status-text" class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Conectando...</span>
             </div>
-            <div class="text-xs text-slate-400">v7.0 • Drag & Drop + Custom Icons</div>
+            <div class="text-xs text-slate-400">v7.1 • Links na Caderneta</div>
         </div>
     </header>
 
@@ -164,15 +164,18 @@
             <h2 id="note-modal-title" class="text-xl font-bold text-white mb-6">Nova Anotação</h2>
             <div class="space-y-4">
                 <input type="hidden" id="edit-note-index">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tipo</label>
-                        <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
-                            <option value="task">Tarefa</option>
-                            <option value="note">Texto Livre</option>
-                            <option value="reminder">Lembrete</option>
-                        </select>
-                    </div>
+                
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tipo</label>
+                    <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                        <option value="task">Tarefa</option>
+                        <option value="note">Texto Livre</option>
+                        <option value="reminder">Lembrete</option>
+                        <option value="link">Botão de Link</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4" id="note-meta-fields">
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Urgência</label>
                         <select id="note-urgency" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
@@ -180,7 +183,7 @@
                             <option value="high" class="text-red-400">Alta Urgência</option>
                         </select>
                     </div>
-                    <div class="col-span-2">
+                    <div>
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Importância</label>
                         <select id="note-importance" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
                             <option value="normal">Normal</option>
@@ -188,8 +191,20 @@
                         </select>
                     </div>
                 </div>
+
+                <div id="note-link-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Título do Link</label>
+                        <input type="text" id="note-title" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm" placeholder="Ex: Planilha de Custos">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">URL (Endereço)</label>
+                        <input type="text" id="note-url" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm" placeholder="https://...">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Conteúdo</label>
+                    <label id="note-content-label" class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Conteúdo</label>
                     <textarea id="note-content" rows="3" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm resize-none"></textarea>
                 </div>
             </div>
@@ -201,8 +216,16 @@
     </div>
 
     <script>
+        // Lógica Visual do Modal da Caderneta (Alternar Campos)
+        document.getElementById('note-type').addEventListener('change', function() {
+            const isLink = this.value === 'link';
+            document.getElementById('note-meta-fields').style.display = isLink ? 'none' : 'grid';
+            document.getElementById('note-link-fields').style.display = isLink ? 'block' : 'none';
+            document.getElementById('note-content-label').innerText = isLink ? 'Subtítulo / Descrição' : 'Conteúdo';
+        });
+
         // ==========================================
-        // 1. CONFIGURAÇÃO DO FIREBASE (Suas chaves)
+        // 1. CONFIGURAÇÃO DO FIREBASE
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBA1ed_R66E_UFpFw-irpPtwSSIQvhy9jY",
@@ -224,8 +247,8 @@
         let projects = [];
         let activeProjectIdx = null;
         let activeLinkIdx = null;
-        let sortableInstances = {}; // Guarda as instâncias de arrastar
-        let awaitingIconFor = null; // Controla qual ícone está sendo editado
+        let sortableInstances = {}; 
+        let awaitingIconFor = null;
 
         function saveToCloud() {
             const statusIcon = document.getElementById('cloud-status-icon');
@@ -264,7 +287,7 @@
             
             sortableInstances[containerId] = Sortable.create(el, {
                 animation: 150,
-                delay: 150, // Delay necessário para diferenciar clique de arrasto
+                delay: 150,
                 delayOnTouchOnly: true,
                 ghostClass: 'sortable-ghost',
                 onEnd: function (evt) {
@@ -295,7 +318,6 @@
             });
         }
 
-        // Recalcula qual projeto/link está ativo após reordenar
         function handleIndexShift(activeIdx, oldIdx, newIdx) {
             if (activeIdx === null) return null;
             if (activeIdx === oldIdx) return newIdx;
@@ -316,7 +338,6 @@
         function formatNoteContent(text) {
             let safeText = escapeHTML(text);
             const urlRegex = /(https?:\/\/[^\s]+)/g;
-            // Transforma URLs em tags <a> com target _blank
             return safeText.replace(urlRegex, function(url) {
                 return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 underline font-medium break-all" onclick="event.stopPropagation()">${url}</a>`;
             });
@@ -329,19 +350,16 @@
             event.stopPropagation(); event.preventDefault();
             awaitingIconFor = { type, index };
             
-            // Tenta abrir a seleção de arquivos tradicional
             document.getElementById('icon-file-input').click();
             
-            // Mostra aviso para colar (Print)
             const statusText = document.getElementById('cloud-status-text');
             document.getElementById('cloud-status-icon').className = "fas fa-paste text-blue-400 text-xs";
             statusText.innerText = "Dê Ctrl+V para colar o Print!";
             statusText.className = "bg-blue-900/50 text-blue-300 text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-wider";
             
-            setTimeout(() => { if(!awaitingIconFor) return; saveToCloud(); }, 5000); // Reseta aviso após 5s
+            setTimeout(() => { if(!awaitingIconFor) return; saveToCloud(); }, 5000);
         }
 
-        // Ouve o evento de colar imagem na página inteira
         document.addEventListener('paste', function(e) {
             if (!awaitingIconFor) return;
             const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -355,20 +373,18 @@
             }
         });
 
-        // Ouve a seleção manual de arquivos
         document.getElementById('icon-file-input').addEventListener('change', function(e) {
             if (!awaitingIconFor || !e.target.files[0]) return;
             processImageFile(e.target.files[0]);
         });
 
-        // Comprime a imagem para não estourar o Firebase
         function processImageFile(fileBlob) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 120; // 120x120px é minúsculo e perfeito para ícones
+                    const MAX_SIZE = 120; 
                     let width = img.width, height = img.height;
                     
                     if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
@@ -378,7 +394,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Transforma em WebP levinho
                     const compressedBase64 = canvas.toDataURL('image/webp', 0.8);
                     saveCustomIcon(compressedBase64);
                 };
@@ -406,13 +421,12 @@
             const container = document.getElementById('tools-list');
             if (!container) return; container.innerHTML = '';
             tools.forEach((t, i) => {
-                // Verificação de ícone customizado
                 let iconHTML = t.customIcon ? `<img src="${t.customIcon}" class="w-full h-full object-cover">` : `<i class="fas fa-wrench text-purple-400 group-hover/icon:text-purple-300 text-xs"></i>`;
                 
                 container.innerHTML += `
                     <div class="group relative draggable-item mb-2">
                         <div class="w-full text-left p-3 rounded-xl bg-[#0F172A] border border-slate-700/50 hover:border-purple-500 transition-all flex items-center gap-3" onclick="window.open('${t.url}', '_blank')">
-                            <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-purple-500/30 transition-all" onclick="requestCustomIcon('tool', ${i}, event)" title="Alterar ícone (Clique ou Cole)">
+                            <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-purple-500/30 transition-all" onclick="requestCustomIcon('tool', ${i}, event)" title="Alterar ícone">
                                 ${iconHTML}
                             </div>
                             <span class="font-medium text-slate-200 text-xs truncate flex-1">${t.name}</span>
@@ -437,7 +451,7 @@
                 container.innerHTML += `
                     <div class="group relative draggable-item mb-3">
                         <button onclick="selectProject(${i})" class="w-full text-left p-3 md:p-4 rounded-xl bg-[#0F172A] border ${isActive ? 'active-project shadow-lg shadow-blue-500/10' : 'border-slate-700/50 opacity-70'} hover:opacity-100 transition-all flex items-center gap-3 md:gap-4">
-                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-blue-500/30 transition-all" onclick="requestCustomIcon('project', ${i}, event)" title="Alterar ícone (Clique ou Cole)">
+                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-blue-500/30 transition-all" onclick="requestCustomIcon('project', ${i}, event)" title="Alterar ícone">
                                 ${iconHTML}
                             </div>
                             <div class="truncate flex-1">
@@ -476,7 +490,7 @@
                 container.innerHTML += `
                     <div class="group draggable-item mb-4 flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border ${isActiveLink ? 'active-link' : 'border-slate-700'} hover:border-emerald-500 transition-all cursor-pointer" onclick="selectLink(${i})">
                         <div class="flex items-center gap-4 flex-1 overflow-hidden">
-                            <div class="w-10 h-10 md:w-12 md:h-12 ${isActiveLink ? 'bg-emerald-500/20' : 'bg-slate-800'} rounded-lg flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-emerald-500/30 transition-all" onclick="requestCustomIcon('link', ${i}, event)" title="Alterar ícone (Clique ou Cole)">
+                            <div class="w-10 h-10 md:w-12 md:h-12 ${isActiveLink ? 'bg-emerald-500/20' : 'bg-slate-800'} rounded-lg flex items-center justify-center shrink-0 overflow-hidden cursor-pointer group/icon shadow hover:shadow-emerald-500/30 transition-all" onclick="requestCustomIcon('link', ${i}, event)" title="Alterar ícone">
                                 ${iconHTML}
                             </div>
                             <div class="truncate pr-4 flex-1">
@@ -513,34 +527,56 @@
             titleSpan.innerText = activeLink.title || 'Caderneta'; addBtn.classList.remove('hidden'); container.innerHTML = '';
 
             activeLink.notebook.forEach((note, i) => {
-                let icon = note.type === 'task' ? 'fa-check-square' : (note.type === 'reminder' ? 'fa-bell' : 'fa-align-left');
-                let urgencyBadge = note.urgency === 'high' ? `<span class="text-[9px] font-bold bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Urgente</span>` : '';
-                let importanceBadge = note.importance === 'high' ? `<span class="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Importante</span>` : '';
-                let borderClass = 'border-slate-700/50';
-                if (note.urgency === 'high' && note.importance === 'high') borderClass = 'border-red-500/50';
-                else if (note.importance === 'high') borderClass = 'border-amber-500/50';
-
-                // Aplica a formatação de links clicáveis no conteúdo
-                let htmlContent = formatNoteContent(note.content);
-
-                container.innerHTML += `
-                    <div class="group relative draggable-item p-3 mb-3 bg-[#0F172A] border ${borderClass} rounded-xl hover:border-amber-500 transition-all flex flex-col gap-2">
-                        <div class="flex items-start gap-3">
-                            ${note.type === 'task' ? 
-                                `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${note.done ? 'bg-amber-500 border-amber-500' : 'border-slate-500'}">
-                                    ${note.done ? '<i class="fas fa-check text-[#0F172A] text-[10px]"></i>' : ''}
-                                </button>` : `<i class="fas ${icon} text-slate-500 mt-1 text-xs shrink-0"></i>`
-                            }
-                            <div class="flex-1 min-w-0">
-                                <p class="text-[13px] leading-snug whitespace-pre-wrap break-words ${note.done ? 'line-through text-slate-500' : 'text-slate-300'}">${htmlContent}</p>
-                                <div class="flex gap-1.5 mt-2">${importanceBadge}${urgencyBadge}</div>
+                
+                // RENDERIZAÇÃO ESPECIAL PARA TIPO "LINK"
+                if (note.type === 'link') {
+                    container.innerHTML += `
+                        <div class="group relative draggable-item mb-3 flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-slate-700/50 hover:border-amber-500 transition-all cursor-pointer" onclick="window.open('${note.url}', '_blank')">
+                            <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                                <div class="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center shrink-0">
+                                    <i class="fas fa-external-link-square-alt text-amber-400"></i>
+                                </div>
+                                <div class="truncate pr-4 flex-1">
+                                    <p class="font-semibold text-sm text-amber-400 group-hover:text-amber-300 truncate transition-colors">${note.title || 'Link Sem Título'}</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5 truncate">${note.content || ''}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-md border border-slate-600 shadow-md z-10">
-                            <button onclick="openNoteModal(${i})" class="p-1 text-slate-400 hover:text-amber-400"><i class="fas fa-edit text-[10px]"></i></button>
-                            <button onclick="deleteNote(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
-                        </div>
-                    </div>`;
+                            <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-md border border-slate-600 shadow-md z-10">
+                                <button onclick="event.stopPropagation(); openNoteModal(${i})" class="p-1 text-slate-400 hover:text-amber-400"><i class="fas fa-edit text-[10px]"></i></button>
+                                <button onclick="event.stopPropagation(); deleteNote(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>`;
+                } 
+                // RENDERIZAÇÃO NORMAL (TAREFAS, NOTAS E LEMBRETES)
+                else {
+                    let icon = note.type === 'task' ? 'fa-check-square' : (note.type === 'reminder' ? 'fa-bell' : 'fa-align-left');
+                    let urgencyBadge = note.urgency === 'high' ? `<span class="text-[9px] font-bold bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Urgente</span>` : '';
+                    let importanceBadge = note.importance === 'high' ? `<span class="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Importante</span>` : '';
+                    let borderClass = 'border-slate-700/50';
+                    if (note.urgency === 'high' && note.importance === 'high') borderClass = 'border-red-500/50';
+                    else if (note.importance === 'high') borderClass = 'border-amber-500/50';
+
+                    let htmlContent = formatNoteContent(note.content);
+
+                    container.innerHTML += `
+                        <div class="group relative draggable-item p-3 mb-3 bg-[#0F172A] border ${borderClass} rounded-xl hover:border-amber-500 transition-all flex flex-col gap-2">
+                            <div class="flex items-start gap-3">
+                                ${note.type === 'task' ? 
+                                    `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${note.done ? 'bg-amber-500 border-amber-500' : 'border-slate-500'}">
+                                        ${note.done ? '<i class="fas fa-check text-[#0F172A] text-[10px]"></i>' : ''}
+                                    </button>` : `<i class="fas ${icon} text-slate-500 mt-1 text-xs shrink-0"></i>`
+                                }
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] leading-snug whitespace-pre-wrap break-words ${note.done ? 'line-through text-slate-500' : 'text-slate-300'}">${htmlContent}</p>
+                                    <div class="flex gap-1.5 mt-2">${importanceBadge}${urgencyBadge}</div>
+                                </div>
+                            </div>
+                            <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-md border border-slate-600 shadow-md z-10">
+                                <button onclick="openNoteModal(${i})" class="p-1 text-slate-400 hover:text-amber-400"><i class="fas fa-edit text-[10px]"></i></button>
+                                <button onclick="deleteNote(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>`;
+                }
             });
             bindSortable('notebook-container', 'notes');
         }
@@ -602,21 +638,51 @@
             document.getElementById('edit-note-index').value = i;
             if(i > -1) {
                 const n = projects[activeProjectIdx].links[activeLinkIdx].notebook[i];
-                document.getElementById('note-type').value = n.type; document.getElementById('note-urgency').value = n.urgency; document.getElementById('note-importance').value = n.importance; document.getElementById('note-content').value = n.content;
+                document.getElementById('note-type').value = n.type || 'task'; 
+                document.getElementById('note-urgency').value = n.urgency || 'normal'; 
+                document.getElementById('note-importance').value = n.importance || 'normal'; 
+                document.getElementById('note-content').value = n.content || '';
+                document.getElementById('note-title').value = n.title || '';
+                document.getElementById('note-url').value = n.url || '';
             } else {
-                document.getElementById('note-type').value = 'task'; document.getElementById('note-urgency').value = 'normal'; document.getElementById('note-importance').value = 'normal'; document.getElementById('note-content').value = '';
+                document.getElementById('note-type').value = 'task'; 
+                document.getElementById('note-urgency').value = 'normal'; 
+                document.getElementById('note-importance').value = 'normal'; 
+                document.getElementById('note-content').value = '';
+                document.getElementById('note-title').value = '';
+                document.getElementById('note-url').value = '';
             }
+            // Dispara o evento change para atualizar a exibição dos campos corretos
+            document.getElementById('note-type').dispatchEvent(new Event('change'));
             document.getElementById('note-modal').classList.replace('hidden', 'flex');
         }
+
         function saveNote() {
             const i = document.getElementById('edit-note-index').value;
+            const type = document.getElementById('note-type').value;
             const content = document.getElementById('note-content').value;
-            if(!content.trim()) return;
-            const data = { type: document.getElementById('note-type').value, urgency: document.getElementById('note-urgency').value, importance: document.getElementById('note-importance').value, content: content, done: i > -1 ? projects[activeProjectIdx].links[activeLinkIdx].notebook[i].done : false };
-            if(i > -1) projects[activeProjectIdx].links[activeLinkIdx].notebook[i] = data; else projects[activeProjectIdx].links[activeLinkIdx].notebook.push(data);
+            
+            // Impede salvar anotações vazias (se for tipo texto/tarefa) ou links sem título
+            if(type !== 'link' && !content.trim()) return;
+            if(type === 'link' && !document.getElementById('note-title').value.trim()) return;
+
+            const data = { 
+                type: type, 
+                urgency: document.getElementById('note-urgency').value, 
+                importance: document.getElementById('note-importance').value, 
+                content: content, 
+                title: document.getElementById('note-title').value,
+                url: document.getElementById('note-url').value,
+                done: i > -1 ? projects[activeProjectIdx].links[activeLinkIdx].notebook[i].done : false 
+            };
+
+            if(i > -1) projects[activeProjectIdx].links[activeLinkIdx].notebook[i] = data; 
+            else projects[activeProjectIdx].links[activeLinkIdx].notebook.push(data);
+            
             closeModal('note-modal'); saveToCloud(); renderNotebook(); 
         }
-        function deleteNote(i) { if(confirm('Excluir anotação?')) { projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1); saveToCloud(); renderNotebook(); } }
+
+        function deleteNote(i) { if(confirm('Excluir anotação/link?')) { projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1); saveToCloud(); renderNotebook(); } }
         function toggleNoteDone(i) { const note = projects[activeProjectIdx].links[activeLinkIdx].notebook[i]; note.done = !note.done; saveToCloud(); renderNotebook(); }
 
         // ==========================================
