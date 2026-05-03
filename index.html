@@ -14,6 +14,7 @@
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         .active-project { border-color: #3b82f6 !important; background-color: #1e293b !important; opacity: 1 !important; }
+        .active-link { border-color: #10b981 !important; background-color: #1e293b !important; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-[#0F172A] text-slate-200 flex flex-col">
@@ -25,14 +26,14 @@
             </div>
             <div>
                 <h1 class="text-xl font-bold text-white tracking-wide">Painel de Comando</h1>
-                <p class="text-slate-400 text-xs">Ecossistema PetLojas</p>
+                <p class="text-slate-400 text-xs">Encontre tudo em um só lugar</p>
             </div>
         </div>
         <div class="text-right flex flex-col items-end gap-1">
             <div class="flex items-center gap-3">
                 <span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Status: Online</span>
             </div>
-            <div class="text-xs text-slate-400">v4.0 • 4 Colunas Editáveis</div>
+            <div class="text-xs text-slate-400">v5.0 • Caderneta Integrada</div>
         </div>
     </header>
 
@@ -73,17 +74,23 @@
         </section>
 
         <section class="lg:col-span-3 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
-            <div class="p-5 border-b border-slate-700/50 shrink-0">
-                <h3 class="font-bold text-white flex items-center gap-2 text-sm">
-                    <i class="fas fa-tasks text-blue-400"></i> Checklist Diário
-                </h3>
+            <div class="p-5 border-b border-slate-700/50 shrink-0 flex justify-between items-center">
+                <div class="overflow-hidden pr-2">
+                    <h3 class="font-bold text-white flex items-center gap-2 text-sm truncate">
+                        <i class="fas fa-book text-amber-500"></i> Caderneta
+                    </h3>
+                    <p id="active-link-name" class="text-[10px] text-slate-400 mt-1 truncate">Selecione um subprojeto...</p>
+                </div>
+                <button id="add-note-btn" onclick="openNoteModal()" class="w-8 h-8 bg-amber-600 hover:bg-amber-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg shadow-amber-600/20 hidden shrink-0">
+                    <i class="fas fa-plus text-xs"></i>
+                </button>
             </div>
+            
             <div class="p-5 flex-1 overflow-y-auto">
-                <div id="checklist-container" class="space-y-3"></div>
-            </div>
-            <div class="p-4 bg-[#0F172A] border-t border-slate-700/50 shrink-0">
-                <div class="relative">
-                    <input type="text" id="new-task" placeholder="Nova tarefa..." class="w-full p-3 bg-[#1E293B] border border-slate-600 text-slate-200 text-sm rounded-xl focus:outline-none focus:border-blue-500">
+                <div id="notebook-container" class="space-y-3">
+                    <div class="text-center text-slate-500 text-xs mt-10">
+                        Selecione um subprojeto na coluna central para visualizar suas anotações.
+                    </div>
                 </div>
             </div>
         </section>
@@ -95,11 +102,11 @@
             <div class="space-y-4">
                 <input type="hidden" id="edit-tool-index">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome da Ferramenta</label>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome</label>
                     <input type="text" id="tool-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Link de Acesso)</label>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Link)</label>
                     <input type="text" id="tool-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500">
                 </div>
             </div>
@@ -133,11 +140,11 @@
 
     <div id="link-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
         <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6">
-            <h2 id="link-modal-title" class="text-xl font-bold text-white mb-6">Novo Link</h2>
+            <h2 id="link-modal-title" class="text-xl font-bold text-white mb-6">Novo Subprojeto (Link)</h2>
             <div class="space-y-4">
                 <input type="hidden" id="edit-link-index">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Título do Link</label>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Título</label>
                     <input type="text" id="link-title-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500">
                 </div>
                 <div>
@@ -151,18 +158,79 @@
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('link-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
-                <button onclick="saveLink()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Salvar Link</button>
+                <button onclick="saveLink()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="note-modal" class="fixed inset-0 bg-[#0F172A]/90 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-[#1E293B] border border-slate-700 rounded-2xl w-full max-w-md p-6">
+            <h2 id="note-modal-title" class="text-xl font-bold text-white mb-6">Nova Anotação</h2>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-note-index">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tipo</label>
+                        <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                            <option value="task">Tarefa (Checkbox)</option>
+                            <option value="note">Texto Livre</option>
+                            <option value="reminder">Lembrete</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Urgência</label>
+                        <select id="note-urgency" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                            <option value="normal">Normal</option>
+                            <option value="high" class="text-red-400">Alta Urgência</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Importância</label>
+                        <select id="note-importance" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                            <option value="normal">Normal</option>
+                            <option value="high" class="text-amber-400">Alta Importância</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Conteúdo da Anotação</label>
+                    <textarea id="note-content" rows="3" placeholder="Escreva os detalhes, links soltos ou pendências..." class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm resize-none"></textarea>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button onclick="closeModal('note-modal')" class="px-4 py-2 text-slate-400 text-sm">Cancelar</button>
+                <button onclick="saveNote()" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm transition-colors">Salvar na Caderneta</button>
             </div>
         </div>
     </div>
 
     <script>
-        // === FERRAMENTAS GLOBAIS ===
-        let tools = JSON.parse(localStorage.getItem('petlojas-v4-tools')) || [
+        // === DADOS E ESTADO GERAL ===
+        // Usamos uma nova chave para garantir que a estrutura 'notebook' exista em projetos antigos
+        let tools = JSON.parse(localStorage.getItem('petlojas-v5-tools')) || [
             { name: "ChatGPT", url: "https://chat.openai.com" },
             { name: "GitHub", url: "https://github.com" }
         ];
 
+        let projects = JSON.parse(localStorage.getItem('petlojas-v5-data')) || [
+            { 
+                name: "CRM PetLojas", subtitle: "Gestão de Leads e Funil", 
+                links: [{
+                    title: "Repositório Principal", url: "#", desc: "Acesso ao código fonte", 
+                    notebook: [
+                        { type: "task", content: "Atualizar chaves do Firebase", urgency: "high", importance: "high", done: false },
+                        { type: "reminder", content: "Revisar estrutura do Kanban na sexta", urgency: "normal", importance: "high", done: false }
+                    ]
+                }] 
+            }
+        ];
+        
+        let activeProjectIdx = 0;
+        let activeLinkIdx = null; // Começa sem subprojeto selecionado
+
+        // === FERRAMENTAS ===
         function renderTools() {
             const container = document.getElementById('tools-list');
             container.innerHTML = '';
@@ -181,49 +249,18 @@
                         </div>
                     </div>`;
             });
-            localStorage.setItem('petlojas-v4-tools', JSON.stringify(tools));
+            localStorage.setItem('petlojas-v5-tools', JSON.stringify(tools));
         }
 
-        function openToolModal(i = -1) {
-            document.getElementById('edit-tool-index').value = i;
-            if(i > -1) {
-                document.getElementById('tool-name-input').value = tools[i].name;
-                document.getElementById('tool-url-input').value = tools[i].url;
-                document.getElementById('tool-modal-title').innerText = "Editar Ferramenta";
-            } else {
-                document.getElementById('tool-name-input').value = '';
-                document.getElementById('tool-url-input').value = '';
-                document.getElementById('tool-modal-title').innerText = "Nova Ferramenta";
-            }
-            document.getElementById('tool-modal').classList.replace('hidden', 'flex');
-        }
-
-        function saveTool() {
-            const i = document.getElementById('edit-tool-index').value;
-            const data = { 
-                name: document.getElementById('tool-name-input').value, 
-                url: document.getElementById('tool-url-input').value 
-            };
-            if(i > -1) tools[i] = data; else tools.push(data);
-            closeModal('tool-modal'); 
-            renderTools();
-        }
-
-        function deleteTool(i) {
-            if(confirm('Excluir ferramenta?')) { tools.splice(i, 1); renderTools(); }
-        }
-
-        // === PROJETOS E LINKS ===
-        let projects = JSON.parse(localStorage.getItem('petlojas-v3-data')) || [
-            { name: "CRM PetLojas", subtitle: "Gestão de Leads e Funil", links: [{title: "Repositório", url: "#", desc: "Acesso ao código fonte"}] }
-        ];
-        let activeIdx = 0;
-
+        // === PROJETOS (COLUNA 1) ===
         function renderProjects() {
             const container = document.getElementById('project-list');
             container.innerHTML = '';
             projects.forEach((p, i) => {
-                const isActive = i === activeIdx;
+                // Garante que todo link tenha o array notebook (migração suave)
+                p.links.forEach(l => { if(!l.notebook) l.notebook = []; });
+
+                const isActive = i === activeProjectIdx;
                 container.innerHTML += `
                     <div class="group relative">
                         <button onclick="selectProject(${i})" class="w-full text-left p-3 md:p-4 rounded-xl bg-[#0F172A] border ${isActive ? 'active-project shadow-lg shadow-blue-500/10' : 'border-slate-700/50 opacity-70'} hover:opacity-100 transition-all flex items-center gap-3 md:gap-4">
@@ -242,113 +279,250 @@
                     </div>`;
             });
             updateCenter();
-            localStorage.setItem('petlojas-v3-data', JSON.stringify(projects));
+            localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
         }
 
+        function selectProject(i) { 
+            activeProjectIdx = i; 
+            activeLinkIdx = null; // Reseta a seleção de subprojeto ao mudar de projeto pai
+            renderProjects(); 
+        }
+
+        // === SUBPROJETOS / LINKS (COLUNA 2) ===
         function updateCenter() {
-            const p = projects[activeIdx] || {name: 'Nenhum projeto', subtitle: '', links: []};
+            const p = projects[activeProjectIdx] || {name: 'Nenhum projeto', subtitle: '', links: []};
             document.getElementById('active-project-name').innerText = p.name;
             document.getElementById('active-project-subtitle').innerText = p.subtitle;
             
             const container = document.getElementById('links-list');
             container.innerHTML = '';
             p.links.forEach((l, i) => {
+                const isActiveLink = i === activeLinkIdx;
                 container.innerHTML += `
-                    <div class="group flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-slate-700 hover:border-slate-500 transition-all">
-                        <a href="${l.url}" target="_blank" class="flex items-center gap-4 flex-1 overflow-hidden">
-                            <div class="w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-slate-700 transition-colors"><i class="fas fa-link text-slate-400 group-hover:text-white"></i></div>
+                    <div class="group flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border ${isActiveLink ? 'active-link' : 'border-slate-700'} hover:border-emerald-500 transition-all cursor-pointer" onclick="selectLink(${i})">
+                        <div class="flex items-center gap-4 flex-1 overflow-hidden">
+                            <div class="w-10 h-10 md:w-12 md:h-12 ${isActiveLink ? 'bg-emerald-500/20' : 'bg-slate-800'} rounded-lg flex items-center justify-center shrink-0 transition-colors">
+                                <i class="fas fa-link ${isActiveLink ? 'text-emerald-400' : 'text-slate-400'}"></i>
+                            </div>
                             <div class="truncate pr-4">
-                                <p class="font-semibold text-sm text-slate-200 group-hover:text-white truncate">${l.title}</p>
+                                <p class="font-semibold text-sm ${isActiveLink ? 'text-emerald-400' : 'text-slate-200'} group-hover:text-emerald-400 truncate transition-colors">${l.title}</p>
                                 <p class="text-[11px] md:text-xs text-slate-500 mt-1 truncate">${l.desc}</p>
                             </div>
-                        </a>
-                        <div class="flex gap-2 md:gap-3 ml-2 shrink-0">
-                            <button onclick="openLinkModal(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"><i class="fas fa-edit text-xs"></i></button>
-                            <button onclick="deleteLink(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors"><i class="fas fa-trash text-xs"></i></button>
+                        </div>
+                        <div class="flex gap-2 ml-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <a href="${l.url}" target="_blank" onclick="event.stopPropagation()" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-blue-600 transition-colors" title="Abrir URL"><i class="fas fa-external-link-alt text-[10px]"></i></a>
+                            <button onclick="event.stopPropagation(); openLinkModal(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"><i class="fas fa-edit text-[10px]"></i></button>
+                            <button onclick="event.stopPropagation(); deleteLink(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors"><i class="fas fa-trash text-[10px]"></i></button>
                         </div>
                     </div>`;
             });
+            renderNotebook();
         }
 
-        function selectProject(i) { activeIdx = i; renderProjects(); }
+        function selectLink(i) {
+            activeLinkIdx = i;
+            updateCenter(); // Re-renderiza para atualizar as bordas verdes
+        }
 
+        // === CADERNETA (COLUNA 3) ===
+        function renderNotebook() {
+            const container = document.getElementById('notebook-container');
+            const addBtn = document.getElementById('add-note-btn');
+            const titleSpan = document.getElementById('active-link-name');
+
+            if (activeLinkIdx === null || !projects[activeProjectIdx] || !projects[activeProjectIdx].links[activeLinkIdx]) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Selecione um subprojeto na coluna central para gerenciar sua caderneta.</div>`;
+                addBtn.classList.add('hidden');
+                titleSpan.innerText = "Selecione um subprojeto...";
+                return;
+            }
+
+            const activeLink = projects[activeProjectIdx].links[activeLinkIdx];
+            titleSpan.innerText = activeLink.title;
+            addBtn.classList.remove('hidden');
+            container.innerHTML = '';
+
+            if (activeLink.notebook.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-[11px] mt-10 italic">Caderneta vazia.<br>Clique no botão amarelo para adicionar tarefas, textos ou lembretes.</div>`;
+            } else {
+                activeLink.notebook.forEach((note, i) => {
+                    // Configurações visuais baseadas no tipo e importância
+                    let icon = note.type === 'task' ? 'fa-check-square' : (note.type === 'reminder' ? 'fa-bell' : 'fa-align-left');
+                    let urgencyBadge = note.urgency === 'high' ? `<span class="text-[9px] font-bold bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Urgente</span>` : '';
+                    let importanceBadge = note.importance === 'high' ? `<span class="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Importante</span>` : '';
+                    
+                    // Bordas especiais
+                    let borderClass = 'border-slate-700/50';
+                    if (note.urgency === 'high' && note.importance === 'high') borderClass = 'border-red-500/50';
+                    else if (note.importance === 'high') borderClass = 'border-amber-500/50';
+
+                    container.innerHTML += `
+                        <div class="group relative p-3 bg-[#0F172A] border ${borderClass} rounded-xl hover:border-amber-500 transition-all flex flex-col gap-2">
+                            <div class="flex items-start gap-3">
+                                ${note.type === 'task' ? 
+                                    `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${note.done ? 'bg-amber-500 border-amber-500' : 'border-slate-500'}">
+                                        ${note.done ? '<i class="fas fa-check text-[#0F172A] text-[10px]"></i>' : ''}
+                                    </button>` 
+                                    : `<i class="fas ${icon} text-slate-500 mt-1 text-xs shrink-0"></i>`
+                                }
+                                <div class="flex-1">
+                                    <p class="text-[13px] leading-snug whitespace-pre-wrap ${note.done ? 'line-through text-slate-500' : 'text-slate-300'}">${note.content}</p>
+                                    <div class="flex gap-1.5 mt-2">
+                                        ${importanceBadge}
+                                        ${urgencyBadge}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-md border border-slate-600 shadow-md">
+                                <button onclick="openNoteModal(${i})" class="p-1 text-slate-400 hover:text-amber-400"><i class="fas fa-edit text-[10px]"></i></button>
+                                <button onclick="deleteNote(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
+                            </div>
+                        </div>`;
+                });
+            }
+            
+            // Salva as alterações feitas no click (checkboxes)
+            localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
+        }
+
+        // === FUNÇÕES DOS MODAIS ===
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+
+        // Modal Ferramenta
+        function openToolModal(i = -1) {
+            document.getElementById('edit-tool-index').value = i;
+            if(i > -1) {
+                document.getElementById('tool-name-input').value = tools[i].name;
+                document.getElementById('tool-url-input').value = tools[i].url;
+            } else {
+                document.getElementById('tool-name-input').value = '';
+                document.getElementById('tool-url-input').value = '';
+            }
+            document.getElementById('tool-modal').classList.replace('hidden', 'flex');
+        }
+        function saveTool() {
+            const i = document.getElementById('edit-tool-index').value;
+            const data = { name: document.getElementById('tool-name-input').value, url: document.getElementById('tool-url-input').value };
+            if(i > -1) tools[i] = data; else tools.push(data);
+            closeModal('tool-modal'); renderTools();
+        }
+        function deleteTool(i) { if(confirm('Excluir ferramenta?')) { tools.splice(i, 1); renderTools(); } }
+
+        // Modal Projeto
         function openProjectModal(i = -1) {
             document.getElementById('edit-project-index').value = i;
             if(i > -1) {
                 document.getElementById('proj-name-input').value = projects[i].name;
                 document.getElementById('proj-sub-input').value = projects[i].subtitle;
-                document.getElementById('project-modal-title').innerText = "Editar Projeto";
             } else {
                 document.getElementById('proj-name-input').value = '';
                 document.getElementById('proj-sub-input').value = '';
-                document.getElementById('project-modal-title').innerText = "Novo Projeto";
             }
             document.getElementById('project-modal').classList.replace('hidden', 'flex');
         }
+        function saveProject() {
+            const i = document.getElementById('edit-project-index').value;
+            const data = { name: document.getElementById('proj-name-input').value, subtitle: document.getElementById('proj-sub-input').value, links: i > -1 ? projects[i].links : [] };
+            if(i > -1) projects[i] = data; else { projects.push(data); activeProjectIdx = projects.length - 1; }
+            closeModal('project-modal'); renderProjects();
+        }
+        function deleteProject(i) { if(confirm('Excluir projeto inteiro?')) { projects.splice(i, 1); activeProjectIdx = 0; renderProjects(); } }
 
+        // Modal Link (Subprojeto)
         function openLinkModal(i = -1) {
             document.getElementById('edit-link-index').value = i;
             if(i > -1) {
-                const l = projects[activeIdx].links[i];
+                const l = projects[activeProjectIdx].links[i];
                 document.getElementById('link-title-input').value = l.title;
                 document.getElementById('link-url-input').value = l.url;
                 document.getElementById('link-desc-input').value = l.desc;
-                document.getElementById('link-modal-title').innerText = "Editar Link";
             } else {
                 document.getElementById('link-title-input').value = '';
                 document.getElementById('link-url-input').value = '';
                 document.getElementById('link-desc-input').value = '';
-                document.getElementById('link-modal-title').innerText = "Novo Link";
             }
             document.getElementById('link-modal').classList.replace('hidden', 'flex');
         }
-
-        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
-
-        function saveProject() {
-            const i = document.getElementById('edit-project-index').value;
-            const data = { name: document.getElementById('proj-name-input').value, subtitle: document.getElementById('proj-sub-input').value, links: i > -1 ? projects[i].links : [] };
-            if(i > -1) projects[i] = data; else { projects.push(data); activeIdx = projects.length - 1; }
-            closeModal('project-modal'); renderProjects();
-        }
-
-        function deleteProject(i) { if(confirm('Excluir projeto?')) { projects.splice(i, 1); activeIdx = 0; renderProjects(); } }
-
         function saveLink() {
             const i = document.getElementById('edit-link-index').value;
-            const data = { title: document.getElementById('link-title-input').value, url: document.getElementById('link-url-input').value, desc: document.getElementById('link-desc-input').value };
-            if(i > -1) projects[activeIdx].links[i] = data; else projects[activeIdx].links.push(data);
+            const data = { 
+                title: document.getElementById('link-title-input').value, 
+                url: document.getElementById('link-url-input').value, 
+                desc: document.getElementById('link-desc-input').value,
+                notebook: i > -1 ? projects[activeProjectIdx].links[i].notebook : []
+            };
+            if(i > -1) projects[activeProjectIdx].links[i] = data; 
+            else {
+                projects[activeProjectIdx].links.push(data);
+                activeLinkIdx = projects[activeProjectIdx].links.length - 1; // Seleciona o novo link
+            }
             closeModal('link-modal'); renderProjects();
         }
-
-        function deleteLink(i) { if(confirm('Excluir link?')) { projects[activeIdx].links.splice(i, 1); renderProjects(); } }
-
-        // === CHECKLIST ===
-        let tasks = JSON.parse(localStorage.getItem('tasks-v3')) || [{text: 'Configurar painel V4', done: false}];
-        function renderTasks() {
-            const c = document.getElementById('checklist-container');
-            c.innerHTML = '';
-            tasks.forEach((t, i) => {
-                c.innerHTML += `<div class="group flex items-start gap-3 p-3 bg-[#0F172A] border border-slate-700/50 rounded-xl cursor-pointer hover:border-slate-500 transition-colors" onclick="toggleTask(${i})">
-                    <div class="mt-0.5 w-4 h-4 md:w-5 md:h-5 rounded border shrink-0 ${t.done ? 'bg-blue-500 border-blue-500 flex items-center justify-center' : 'border-slate-500'}">
-                        ${t.done ? '<i class="fas fa-check text-white text-[10px]"></i>' : ''}
-                    </div>
-                    <span class="text-[13px] md:text-sm leading-tight ${t.done ? 'line-through text-slate-500' : 'text-slate-300'}">${t.text}</span>
-                    <button onclick="event.stopPropagation(); deleteTask(${i})" class="ml-auto opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all p-1">
-                        <i class="fas fa-trash text-xs"></i>
-                    </button>
-                </div>`;
-            });
-            localStorage.setItem('tasks-v3', JSON.stringify(tasks));
+        function deleteLink(i) { 
+            if(confirm('Excluir subprojeto/link? A caderneta dele também será apagada.')) { 
+                projects[activeProjectIdx].links.splice(i, 1); 
+                if(activeLinkIdx === i) activeLinkIdx = null;
+                renderProjects(); 
+            } 
         }
-        function toggleTask(i) { tasks[i].done = !tasks[i].done; renderTasks(); }
-        function deleteTask(i) { tasks.splice(i, 1); renderTasks(); }
-        document.getElementById('new-task').onkeypress = (e) => { if(e.key==='Enter' && e.target.value) { tasks.push({text: e.target.value, done: false}); e.target.value=''; renderTasks(); } };
+
+        // Modal Caderneta
+        function openNoteModal(i = -1) {
+            document.getElementById('edit-note-index').value = i;
+            if(i > -1) {
+                const n = projects[activeProjectIdx].links[activeLinkIdx].notebook[i];
+                document.getElementById('note-type').value = n.type;
+                document.getElementById('note-urgency').value = n.urgency;
+                document.getElementById('note-importance').value = n.importance;
+                document.getElementById('note-content').value = n.content;
+                document.getElementById('note-modal-title').innerText = "Editar Anotação";
+            } else {
+                document.getElementById('note-type').value = 'task';
+                document.getElementById('note-urgency').value = 'normal';
+                document.getElementById('note-importance').value = 'normal';
+                document.getElementById('note-content').value = '';
+                document.getElementById('note-modal-title').innerText = "Nova Anotação";
+            }
+            document.getElementById('note-modal').classList.replace('hidden', 'flex');
+        }
+
+        function saveNote() {
+            const i = document.getElementById('edit-note-index').value;
+            const content = document.getElementById('note-content').value;
+            if(!content.trim()) return; // Não salva vazio
+
+            const data = { 
+                type: document.getElementById('note-type').value, 
+                urgency: document.getElementById('note-urgency').value, 
+                importance: document.getElementById('note-importance').value,
+                content: content,
+                done: i > -1 ? projects[activeProjectIdx].links[activeLinkIdx].notebook[i].done : false
+            };
+
+            if(i > -1) projects[activeProjectIdx].links[activeLinkIdx].notebook[i] = data; 
+            else projects[activeProjectIdx].links[activeLinkIdx].notebook.push(data);
+            
+            closeModal('note-modal'); 
+            renderNotebook(); // Salva e renderiza
+        }
+
+        function deleteNote(i) {
+            if(confirm('Excluir anotação?')) {
+                projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1);
+                renderNotebook();
+            }
+        }
+
+        function toggleNoteDone(i) {
+            const note = projects[activeProjectIdx].links[activeLinkIdx].notebook[i];
+            note.done = !note.done;
+            renderNotebook();
+        }
 
         // === INICIALIZAÇÃO ===
         renderTools();
         renderProjects(); 
-        renderTasks();
     </script>
 </body>
 </html>
