@@ -33,7 +33,7 @@
             <div class="flex items-center gap-3">
                 <span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Status: Online</span>
             </div>
-            <div class="text-xs text-slate-400">v5.0 • Caderneta Integrada</div>
+            <div class="text-xs text-slate-400">v5.1 • Dados Recuperados</div>
         </div>
     </header>
 
@@ -85,13 +85,8 @@
                     <i class="fas fa-plus text-xs"></i>
                 </button>
             </div>
-            
             <div class="p-5 flex-1 overflow-y-auto">
-                <div id="notebook-container" class="space-y-3">
-                    <div class="text-center text-slate-500 text-xs mt-10">
-                        Selecione um subprojeto na coluna central para visualizar suas anotações.
-                    </div>
-                </div>
+                <div id="notebook-container" class="space-y-3"></div>
             </div>
         </section>
     </main>
@@ -101,14 +96,8 @@
             <h2 id="tool-modal-title" class="text-xl font-bold text-white mb-6">Nova Ferramenta</h2>
             <div class="space-y-4">
                 <input type="hidden" id="edit-tool-index">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome</label>
-                    <input type="text" id="tool-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Link)</label>
-                    <input type="text" id="tool-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500">
-                </div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome</label><input type="text" id="tool-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Link)</label><input type="text" id="tool-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-purple-500"></div>
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('tool-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
@@ -122,14 +111,8 @@
             <h2 id="project-modal-title" class="text-xl font-bold text-white mb-6">Novo Projeto</h2>
             <div class="space-y-4">
                 <input type="hidden" id="edit-project-index">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome do Projeto</label>
-                    <input type="text" id="proj-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Subtítulo / Descrição</label>
-                    <input type="text" id="proj-sub-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500">
-                </div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nome do Projeto</label><input type="text" id="proj-name-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Subtítulo / Descrição</label><input type="text" id="proj-sub-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-blue-500"></div>
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('project-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
@@ -143,18 +126,9 @@
             <h2 id="link-modal-title" class="text-xl font-bold text-white mb-6">Novo Subprojeto (Link)</h2>
             <div class="space-y-4">
                 <input type="hidden" id="edit-link-index">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Título</label>
-                    <input type="text" id="link-title-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Endereço)</label>
-                    <input type="text" id="link-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Descrição Curta</label>
-                    <input type="text" id="link-desc-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500">
-                </div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Título</label><input type="text" id="link-title-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">URL (Endereço)</label><input type="text" id="link-url-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Descrição Curta</label><input type="text" id="link-desc-input" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-green-500"></div>
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('link-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
@@ -168,69 +142,99 @@
             <h2 id="note-modal-title" class="text-xl font-bold text-white mb-6">Nova Anotação</h2>
             <div class="space-y-4">
                 <input type="hidden" id="edit-note-index">
-                
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tipo</label>
-                        <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
-                            <option value="task">Tarefa (Checkbox)</option>
+                        <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm">
+                            <option value="task">Tarefa</option>
                             <option value="note">Texto Livre</option>
                             <option value="reminder">Lembrete</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Urgência</label>
-                        <select id="note-urgency" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                        <select id="note-urgency" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm">
                             <option value="normal">Normal</option>
                             <option value="high" class="text-red-400">Alta Urgência</option>
                         </select>
                     </div>
                     <div class="col-span-2">
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Importância</label>
-                        <select id="note-importance" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
+                        <select id="note-importance" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm">
                             <option value="normal">Normal</option>
                             <option value="high" class="text-amber-400">Alta Importância</option>
                         </select>
                     </div>
                 </div>
-
                 <div>
-                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Conteúdo da Anotação</label>
-                    <textarea id="note-content" rows="3" placeholder="Escreva os detalhes, links soltos ou pendências..." class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm resize-none"></textarea>
+                    <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Conteúdo</label>
+                    <textarea id="note-content" rows="3" class="w-full p-3 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm resize-none"></textarea>
                 </div>
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('note-modal')" class="px-4 py-2 text-slate-400 text-sm">Cancelar</button>
-                <button onclick="saveNote()" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm transition-colors">Salvar na Caderneta</button>
+                <button onclick="saveNote()" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm">Salvar</button>
             </div>
         </div>
     </div>
 
     <script>
-        // === DADOS E ESTADO GERAL ===
-        // Usamos uma nova chave para garantir que a estrutura 'notebook' exista em projetos antigos
-        let tools = JSON.parse(localStorage.getItem('petlojas-v5-tools')) || [
-            { name: "ChatGPT", url: "https://chat.openai.com" },
-            { name: "GitHub", url: "https://github.com" }
-        ];
-
-        let projects = JSON.parse(localStorage.getItem('petlojas-v5-data')) || [
-            { 
-                name: "CRM PetLojas", subtitle: "Gestão de Leads e Funil", 
-                links: [{
-                    title: "Repositório Principal", url: "#", desc: "Acesso ao código fonte", 
-                    notebook: [
-                        { type: "task", content: "Atualizar chaves do Firebase", urgency: "high", importance: "high", done: false },
-                        { type: "reminder", content: "Revisar estrutura do Kanban na sexta", urgency: "normal", importance: "high", done: false }
-                    ]
-                }] 
-            }
-        ];
+        // ==========================================
+        // MOTOR DE RECUPERAÇÃO AUTOMÁTICA DE DADOS
+        // ==========================================
         
+        let tools = [];
+        let projects = [];
         let activeProjectIdx = 0;
-        let activeLinkIdx = null; // Começa sem subprojeto selecionado
+        let activeLinkIdx = null;
 
-        // === FERRAMENTAS ===
+        function checkAndRecoverData() {
+            // 1. Recupera as Ferramentas (Coluna 0)
+            let oldTools = localStorage.getItem('petlojas-v4-tools');
+            let currentTools = localStorage.getItem('petlojas-v5-tools');
+            
+            if (oldTools && !currentTools) {
+                tools = JSON.parse(oldTools);
+                localStorage.setItem('petlojas-v5-tools', JSON.stringify(tools)); // Migrou
+            } else if (currentTools) {
+                tools = JSON.parse(currentTools);
+            }
+
+            // 2. Recupera os Projetos e Links (Colunas 1 e 2)
+            let oldProjects = localStorage.getItem('petlojas-v3-data'); // Seus dados criados nas versoes anteriores estão aqui
+            let currentProjects = localStorage.getItem('petlojas-v5-data');
+            
+            // Verifica se a gente PRECISA resgatar os dados antigos
+            if (oldProjects && !localStorage.getItem('petlojas-migrated-to-v5')) {
+                projects = JSON.parse(oldProjects);
+                
+                // Prepara os projetos antigos para aceitarem a caderneta nova
+                projects.forEach(p => {
+                    if(p.links) {
+                        p.links.forEach(l => {
+                            if(!l.notebook) l.notebook = [];
+                        });
+                    } else {
+                        p.links = [];
+                    }
+                });
+
+                // Confirma que resgatou e salva no novo formato!
+                localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
+                localStorage.setItem('petlojas-migrated-to-v5', 'true');
+            } else if (currentProjects) {
+                projects = JSON.parse(currentProjects);
+            } else {
+                // Caso seja uma pessoa abrindo pela 1ª vez sem nenhum dado antigo
+                projects = [{ name: "CRM PetLojas", subtitle: "Gestão", links: [] }];
+            }
+        }
+
+        // Executa o resgate imediatamente
+        checkAndRecoverData();
+
+
+        // === FUNÇÕES DE RENDERIZAÇÃO ===
         function renderTools() {
             const container = document.getElementById('tools-list');
             container.innerHTML = '';
@@ -252,14 +256,14 @@
             localStorage.setItem('petlojas-v5-tools', JSON.stringify(tools));
         }
 
-        // === PROJETOS (COLUNA 1) ===
         function renderProjects() {
             const container = document.getElementById('project-list');
             container.innerHTML = '';
-            projects.forEach((p, i) => {
-                // Garante que todo link tenha o array notebook (migração suave)
-                p.links.forEach(l => { if(!l.notebook) l.notebook = []; });
+            
+            if(projects.length === 0) activeProjectIdx = null;
 
+            projects.forEach((p, i) => {
+                p.links.forEach(l => { if(!l.notebook) l.notebook = []; }); // Garante a caderneta
                 const isActive = i === activeProjectIdx;
                 container.innerHTML += `
                     <div class="group relative">
@@ -282,15 +286,18 @@
             localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
         }
 
-        function selectProject(i) { 
-            activeProjectIdx = i; 
-            activeLinkIdx = null; // Reseta a seleção de subprojeto ao mudar de projeto pai
-            renderProjects(); 
-        }
+        function selectProject(i) { activeProjectIdx = i; activeLinkIdx = null; renderProjects(); }
 
-        // === SUBPROJETOS / LINKS (COLUNA 2) ===
         function updateCenter() {
-            const p = projects[activeProjectIdx] || {name: 'Nenhum projeto', subtitle: '', links: []};
+            if (activeProjectIdx === null || !projects[activeProjectIdx]) {
+                document.getElementById('active-project-name').innerText = 'Nenhum projeto';
+                document.getElementById('active-project-subtitle').innerText = '';
+                document.getElementById('links-list').innerHTML = '';
+                renderNotebook();
+                return;
+            }
+
+            const p = projects[activeProjectIdx];
             document.getElementById('active-project-name').innerText = p.name;
             document.getElementById('active-project-subtitle').innerText = p.subtitle;
             
@@ -310,7 +317,7 @@
                             </div>
                         </div>
                         <div class="flex gap-2 ml-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a href="${l.url}" target="_blank" onclick="event.stopPropagation()" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-blue-600 transition-colors" title="Abrir URL"><i class="fas fa-external-link-alt text-[10px]"></i></a>
+                            <a href="${l.url}" target="_blank" onclick="event.stopPropagation()" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-blue-600 transition-colors"><i class="fas fa-external-link-alt text-[10px]"></i></a>
                             <button onclick="event.stopPropagation(); openLinkModal(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"><i class="fas fa-edit text-[10px]"></i></button>
                             <button onclick="event.stopPropagation(); deleteLink(${i})" class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800 text-slate-400 hover:text-white hover:bg-red-500 transition-colors"><i class="fas fa-trash text-[10px]"></i></button>
                         </div>
@@ -319,19 +326,15 @@
             renderNotebook();
         }
 
-        function selectLink(i) {
-            activeLinkIdx = i;
-            updateCenter(); // Re-renderiza para atualizar as bordas verdes
-        }
+        function selectLink(i) { activeLinkIdx = i; updateCenter(); }
 
-        // === CADERNETA (COLUNA 3) ===
         function renderNotebook() {
             const container = document.getElementById('notebook-container');
             const addBtn = document.getElementById('add-note-btn');
             const titleSpan = document.getElementById('active-link-name');
 
             if (activeLinkIdx === null || !projects[activeProjectIdx] || !projects[activeProjectIdx].links[activeLinkIdx]) {
-                container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Selecione um subprojeto na coluna central para gerenciar sua caderneta.</div>`;
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Selecione um subprojeto na coluna central.</div>`;
                 addBtn.classList.add('hidden');
                 titleSpan.innerText = "Selecione um subprojeto...";
                 return;
@@ -343,15 +346,12 @@
             container.innerHTML = '';
 
             if (activeLink.notebook.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-500 text-[11px] mt-10 italic">Caderneta vazia.<br>Clique no botão amarelo para adicionar tarefas, textos ou lembretes.</div>`;
+                container.innerHTML = `<div class="text-center text-slate-500 text-[11px] mt-10 italic">Caderneta vazia. Clique no botão amarelo.</div>`;
             } else {
                 activeLink.notebook.forEach((note, i) => {
-                    // Configurações visuais baseadas no tipo e importância
                     let icon = note.type === 'task' ? 'fa-check-square' : (note.type === 'reminder' ? 'fa-bell' : 'fa-align-left');
                     let urgencyBadge = note.urgency === 'high' ? `<span class="text-[9px] font-bold bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Urgente</span>` : '';
                     let importanceBadge = note.importance === 'high' ? `<span class="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wide">Importante</span>` : '';
-                    
-                    // Bordas especiais
                     let borderClass = 'border-slate-700/50';
                     if (note.urgency === 'high' && note.importance === 'high') borderClass = 'border-red-500/50';
                     else if (note.importance === 'high') borderClass = 'border-amber-500/50';
@@ -360,169 +360,4 @@
                         <div class="group relative p-3 bg-[#0F172A] border ${borderClass} rounded-xl hover:border-amber-500 transition-all flex flex-col gap-2">
                             <div class="flex items-start gap-3">
                                 ${note.type === 'task' ? 
-                                    `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${note.done ? 'bg-amber-500 border-amber-500' : 'border-slate-500'}">
-                                        ${note.done ? '<i class="fas fa-check text-[#0F172A] text-[10px]"></i>' : ''}
-                                    </button>` 
-                                    : `<i class="fas ${icon} text-slate-500 mt-1 text-xs shrink-0"></i>`
-                                }
-                                <div class="flex-1">
-                                    <p class="text-[13px] leading-snug whitespace-pre-wrap ${note.done ? 'line-through text-slate-500' : 'text-slate-300'}">${note.content}</p>
-                                    <div class="flex gap-1.5 mt-2">
-                                        ${importanceBadge}
-                                        ${urgencyBadge}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="absolute right-2 top-2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-md border border-slate-600 shadow-md">
-                                <button onclick="openNoteModal(${i})" class="p-1 text-slate-400 hover:text-amber-400"><i class="fas fa-edit text-[10px]"></i></button>
-                                <button onclick="deleteNote(${i})" class="p-1 text-slate-400 hover:text-red-400"><i class="fas fa-trash text-[10px]"></i></button>
-                            </div>
-                        </div>`;
-                });
-            }
-            
-            // Salva as alterações feitas no click (checkboxes)
-            localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
-        }
-
-        // === FUNÇÕES DOS MODAIS ===
-        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
-
-        // Modal Ferramenta
-        function openToolModal(i = -1) {
-            document.getElementById('edit-tool-index').value = i;
-            if(i > -1) {
-                document.getElementById('tool-name-input').value = tools[i].name;
-                document.getElementById('tool-url-input').value = tools[i].url;
-            } else {
-                document.getElementById('tool-name-input').value = '';
-                document.getElementById('tool-url-input').value = '';
-            }
-            document.getElementById('tool-modal').classList.replace('hidden', 'flex');
-        }
-        function saveTool() {
-            const i = document.getElementById('edit-tool-index').value;
-            const data = { name: document.getElementById('tool-name-input').value, url: document.getElementById('tool-url-input').value };
-            if(i > -1) tools[i] = data; else tools.push(data);
-            closeModal('tool-modal'); renderTools();
-        }
-        function deleteTool(i) { if(confirm('Excluir ferramenta?')) { tools.splice(i, 1); renderTools(); } }
-
-        // Modal Projeto
-        function openProjectModal(i = -1) {
-            document.getElementById('edit-project-index').value = i;
-            if(i > -1) {
-                document.getElementById('proj-name-input').value = projects[i].name;
-                document.getElementById('proj-sub-input').value = projects[i].subtitle;
-            } else {
-                document.getElementById('proj-name-input').value = '';
-                document.getElementById('proj-sub-input').value = '';
-            }
-            document.getElementById('project-modal').classList.replace('hidden', 'flex');
-        }
-        function saveProject() {
-            const i = document.getElementById('edit-project-index').value;
-            const data = { name: document.getElementById('proj-name-input').value, subtitle: document.getElementById('proj-sub-input').value, links: i > -1 ? projects[i].links : [] };
-            if(i > -1) projects[i] = data; else { projects.push(data); activeProjectIdx = projects.length - 1; }
-            closeModal('project-modal'); renderProjects();
-        }
-        function deleteProject(i) { if(confirm('Excluir projeto inteiro?')) { projects.splice(i, 1); activeProjectIdx = 0; renderProjects(); } }
-
-        // Modal Link (Subprojeto)
-        function openLinkModal(i = -1) {
-            document.getElementById('edit-link-index').value = i;
-            if(i > -1) {
-                const l = projects[activeProjectIdx].links[i];
-                document.getElementById('link-title-input').value = l.title;
-                document.getElementById('link-url-input').value = l.url;
-                document.getElementById('link-desc-input').value = l.desc;
-            } else {
-                document.getElementById('link-title-input').value = '';
-                document.getElementById('link-url-input').value = '';
-                document.getElementById('link-desc-input').value = '';
-            }
-            document.getElementById('link-modal').classList.replace('hidden', 'flex');
-        }
-        function saveLink() {
-            const i = document.getElementById('edit-link-index').value;
-            const data = { 
-                title: document.getElementById('link-title-input').value, 
-                url: document.getElementById('link-url-input').value, 
-                desc: document.getElementById('link-desc-input').value,
-                notebook: i > -1 ? projects[activeProjectIdx].links[i].notebook : []
-            };
-            if(i > -1) projects[activeProjectIdx].links[i] = data; 
-            else {
-                projects[activeProjectIdx].links.push(data);
-                activeLinkIdx = projects[activeProjectIdx].links.length - 1; // Seleciona o novo link
-            }
-            closeModal('link-modal'); renderProjects();
-        }
-        function deleteLink(i) { 
-            if(confirm('Excluir subprojeto/link? A caderneta dele também será apagada.')) { 
-                projects[activeProjectIdx].links.splice(i, 1); 
-                if(activeLinkIdx === i) activeLinkIdx = null;
-                renderProjects(); 
-            } 
-        }
-
-        // Modal Caderneta
-        function openNoteModal(i = -1) {
-            document.getElementById('edit-note-index').value = i;
-            if(i > -1) {
-                const n = projects[activeProjectIdx].links[activeLinkIdx].notebook[i];
-                document.getElementById('note-type').value = n.type;
-                document.getElementById('note-urgency').value = n.urgency;
-                document.getElementById('note-importance').value = n.importance;
-                document.getElementById('note-content').value = n.content;
-                document.getElementById('note-modal-title').innerText = "Editar Anotação";
-            } else {
-                document.getElementById('note-type').value = 'task';
-                document.getElementById('note-urgency').value = 'normal';
-                document.getElementById('note-importance').value = 'normal';
-                document.getElementById('note-content').value = '';
-                document.getElementById('note-modal-title').innerText = "Nova Anotação";
-            }
-            document.getElementById('note-modal').classList.replace('hidden', 'flex');
-        }
-
-        function saveNote() {
-            const i = document.getElementById('edit-note-index').value;
-            const content = document.getElementById('note-content').value;
-            if(!content.trim()) return; // Não salva vazio
-
-            const data = { 
-                type: document.getElementById('note-type').value, 
-                urgency: document.getElementById('note-urgency').value, 
-                importance: document.getElementById('note-importance').value,
-                content: content,
-                done: i > -1 ? projects[activeProjectIdx].links[activeLinkIdx].notebook[i].done : false
-            };
-
-            if(i > -1) projects[activeProjectIdx].links[activeLinkIdx].notebook[i] = data; 
-            else projects[activeProjectIdx].links[activeLinkIdx].notebook.push(data);
-            
-            closeModal('note-modal'); 
-            renderNotebook(); // Salva e renderiza
-        }
-
-        function deleteNote(i) {
-            if(confirm('Excluir anotação?')) {
-                projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1);
-                renderNotebook();
-            }
-        }
-
-        function toggleNoteDone(i) {
-            const note = projects[activeProjectIdx].links[activeLinkIdx].notebook[i];
-            note.done = !note.done;
-            renderNotebook();
-        }
-
-        // === INICIALIZAÇÃO ===
-        renderTools();
-        renderProjects(); 
-    </script>
-</body>
-</html>
+                                    `<button onclick="toggleNoteDone(${i})" class="mt-0.5 w-4 h-
