@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Comando | PetLojas</title>
+    <title>Painel de Comando | PetLojas (Cloud)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -15,6 +19,10 @@
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         .active-project { border-color: #3b82f6 !important; background-color: #1e293b !important; opacity: 1 !important; }
         .active-link { border-color: #10b981 !important; background-color: #1e293b !important; }
+        
+        /* Loader Visual */
+        #cloud-loader { display: flex; }
+        .hidden-loader { display: none !important; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-[#0F172A] text-slate-200 flex flex-col">
@@ -30,15 +38,21 @@
             </div>
         </div>
         <div class="text-right flex flex-col items-end gap-1">
-            <div class="flex items-center gap-3">
-                <span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Status: Online</span>
+            <div class="flex items-center gap-2">
+                <i id="cloud-status-icon" class="fas fa-cloud-upload-alt text-slate-500 text-xs"></i>
+                <span id="cloud-status-text" class="bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider">Conectando...</span>
             </div>
-            <div class="text-xs text-slate-400">v5.2 • Blindagem Anti-Bug</div>
+            <div class="text-xs text-slate-400">v6.1 • Firebase Ativado</div>
         </div>
     </header>
 
-    <main class="flex-1 w-full max-w-[1800px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden">
+    <main class="flex-1 w-full max-w-[1800px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden relative">
         
+        <div id="cloud-loader" class="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-sm z-40 flex-col items-center justify-center">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+            <p class="text-slate-300 font-medium tracking-wide">Sincronizando com a Nuvem...</p>
+        </div>
+
         <section class="lg:col-span-2 h-full flex flex-col bg-[#1E293B] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
             <div class="p-4 border-b border-slate-700/50 shrink-0 flex justify-between items-center">
                 <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ferramentas</h3>
@@ -101,7 +115,7 @@
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('tool-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
-                <button onclick="saveTool()" class="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold">Salvar</button>
+                <button onclick="saveTool()" class="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold">Salvar na Nuvem</button>
             </div>
         </div>
     </div>
@@ -116,7 +130,7 @@
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('project-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
-                <button onclick="saveProject()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Salvar</button>
+                <button onclick="saveProject()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Salvar na Nuvem</button>
             </div>
         </div>
     </div>
@@ -132,7 +146,7 @@
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('link-modal')" class="px-4 py-2 text-slate-400">Cancelar</button>
-                <button onclick="saveLink()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Salvar</button>
+                <button onclick="saveLink()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Salvar na Nuvem</button>
             </div>
         </div>
     </div>
@@ -145,7 +159,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tipo</label>
-                        <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm">
+                        <select id="note-type" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
                             <option value="task">Tarefa</option>
                             <option value="note">Texto Livre</option>
                             <option value="reminder">Lembrete</option>
@@ -153,14 +167,14 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Urgência</label>
-                        <select id="note-urgency" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm">
+                        <select id="note-urgency" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
                             <option value="normal">Normal</option>
                             <option value="high" class="text-red-400">Alta Urgência</option>
                         </select>
                     </div>
                     <div class="col-span-2">
                         <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Importância</label>
-                        <select id="note-importance" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm">
+                        <select id="note-importance" class="w-full p-2.5 bg-[#0F172A] border border-slate-600 text-slate-200 rounded-lg outline-none focus:border-amber-500 text-sm appearance-none">
                             <option value="normal">Normal</option>
                             <option value="high" class="text-amber-400">Alta Importância</option>
                         </select>
@@ -173,77 +187,103 @@
             </div>
             <div class="mt-8 flex justify-end gap-3">
                 <button onclick="closeModal('note-modal')" class="px-4 py-2 text-slate-400 text-sm">Cancelar</button>
-                <button onclick="saveNote()" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm">Salvar</button>
+                <button onclick="saveNote()" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm">Salvar na Nuvem</button>
             </div>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // MOTOR DE BLINDAGEM E RECUPERAÇÃO (V5.2)
+        // 1. CONFIGURAÇÃO DO FIREBASE (Suas chaves integradas)
         // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBA1ed_R66E_UFpFw-irpPtwSSIQvhy9jY",
+            authDomain: "painel-de-controle-3f7d8.firebaseapp.com",
+            projectId: "painel-de-controle-3f7d8",
+            storageBucket: "painel-de-controle-3f7d8.firebasestorage.app",
+            messagingSenderId: "234342271805",
+            appId: "1:234342271805:web:df8c5476c11cb6ab1d1354"
+        };
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
         
+        // Referência do documento único onde salvaremos tudo deste painel
+        const dashboardRef = db.collection('petlojas_admin').doc('painel_central');
+
+        // ==========================================
+        // 2. VARIÁVEIS GLOBAIS E SINCRONIZAÇÃO
+        // ==========================================
         let tools = [];
         let projects = [];
         let activeProjectIdx = null;
         let activeLinkIdx = null;
 
-        function initializeEcosystem() {
-            try {
-                // 1. CARREGAMENTO BLINDADO DE FERRAMENTAS
-                let savedTools = localStorage.getItem('petlojas-v5-tools') || localStorage.getItem('petlojas-v4-tools');
-                if (savedTools) tools = JSON.parse(savedTools);
-                if (!Array.isArray(tools)) tools = [];
+        // Função Mestra para Salvar tudo no Firebase
+        function saveToCloud() {
+            const statusIcon = document.getElementById('cloud-status-icon');
+            const statusText = document.getElementById('cloud-status-text');
+            
+            statusIcon.className = "fas fa-sync fa-spin text-blue-400 text-xs";
+            statusText.innerText = "Salvando...";
+            statusText.className = "bg-blue-900/50 text-blue-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider";
 
-                // 2. CARREGAMENTO BLINDADO DE PROJETOS
-                let p5 = localStorage.getItem('petlojas-v5-data');
-                let p3 = localStorage.getItem('petlojas-v3-data');
-                let p2 = localStorage.getItem('petlojas-projects'); // Da versão 2.0 (strings)
-
-                if (p5) {
-                    projects = JSON.parse(p5);
-                } else if (p3) {
-                    projects = JSON.parse(p3);
-                } else if (p2) {
-                    // Migração de segurança extrema caso a pessoa só tenha dados da V2
-                    let oldStrArr = JSON.parse(p2);
-                    if (Array.isArray(oldStrArr)) {
-                        projects = oldStrArr.map(name => ({ name: typeof name === 'string' ? name : "Projeto", subtitle: "", links: [] }));
-                    }
-                }
-
-                if (!Array.isArray(projects)) projects = [];
-
-                // 3. SANITIZAÇÃO (Onde o Crash acontecia)
-                // Vamos garantir que TODAS as propriedades de arrays existam para o código não quebrar.
-                projects.forEach(p => {
-                    if (!p.name) p.name = "Projeto Recuperado";
-                    if (!p.links || !Array.isArray(p.links)) p.links = []; // Impede o Crash "p.links is undefined"
-                    
-                    p.links.forEach(l => {
-                        if (!l.notebook || !Array.isArray(l.notebook)) l.notebook = []; // Impede o Crash da Caderneta
-                    });
-                });
-
-                // Define o projeto ativo inicial se houver algum
-                if (projects.length > 0) activeProjectIdx = 0;
-
-                // Salva imediatamente o banco de dados limpo e estruturado
-                localStorage.setItem('petlojas-v5-tools', JSON.stringify(tools));
-                localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
-
-            } catch (error) {
-                console.error("Bug Interceptado! Detalhes:", error);
-                // Se tudo falhar (dados corrompidos além de reparo), abre vazio mas NÃO quebra a tela.
-                projects = [];
-                tools = [];
-            }
+            dashboardRef.set({
+                tools: tools,
+                projects: projects,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(() => {
+                // Sucesso
+                statusIcon.className = "fas fa-cloud-check text-emerald-400 text-xs";
+                statusText.innerText = "Sincronizado";
+                statusText.className = "bg-emerald-900/50 text-emerald-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider";
+            }).catch((error) => {
+                console.error("Erro ao salvar:", error);
+                statusIcon.className = "fas fa-exclamation-triangle text-red-400 text-xs";
+                statusText.innerText = "Erro na Nuvem";
+                statusText.className = "bg-red-900/50 text-red-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider";
+                alert("Erro de permissão no Firebase. Certifique-se de que as regras do Firestore estão no 'Modo de Teste' (allow read, write: if true;).");
+            });
         }
 
-        // RODA O MOTOR DE BLINDAGEM ANTES DE DESENHAR QUALQUER COISA
-        initializeEcosystem();
+        // Função para Buscar os dados do Firebase ao iniciar a página
+        function loadFromCloud() {
+            dashboardRef.get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    tools = data.tools || [];
+                    projects = data.projects || [];
+                    
+                    if (projects.length > 0) activeProjectIdx = 0;
+                } else {
+                    // Se o documento não existe ainda, inicializa vazio.
+                    tools = [];
+                    projects = [];
+                }
+                
+                // Remove a tela de carregamento e desenha a interface
+                document.getElementById('cloud-loader').classList.add('hidden-loader');
+                document.getElementById('cloud-status-text').innerText = "Sincronizado";
+                document.getElementById('cloud-status-text').className = "bg-emerald-900/50 text-emerald-300 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wider";
+                document.getElementById('cloud-status-icon').className = "fas fa-cloud text-emerald-400 text-xs";
 
-        // === FUNÇÕES DE RENDERIZAÇÃO ===
+                renderTools();
+                renderProjects();
+            }).catch((error) => {
+                console.error("Erro ao carregar do Firebase:", error);
+                document.getElementById('cloud-loader').innerHTML = `
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                    <p class="text-slate-300 font-medium tracking-wide">Erro de Permissão no Firebase</p>
+                    <p class="text-slate-400 text-sm mt-2 text-center max-w-md">Vá no Firebase Console > Firestore Database > Rules.<br>Altere as regras para modo de teste (allow read, write: if true;) e publique.</p>
+                `;
+            });
+        }
+
+        // ==========================================
+        // 3. LÓGICA DA INTERFACE (Renderização e Ações)
+        // ==========================================
+        
         function renderTools() {
             const container = document.getElementById('tools-list');
             if (!container) return;
@@ -255,7 +295,7 @@
                             <div class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 group-hover:bg-purple-500 transition-colors">
                                 <i class="fas fa-wrench text-purple-400 group-hover:text-white text-xs"></i>
                             </div>
-                            <span class="font-medium text-slate-200 text-xs truncate">${t.name || 'Link'}</span>
+                            <span class="font-medium text-slate-200 text-xs truncate">${t.name}</span>
                         </a>
                         <div class="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex gap-1 bg-[#1e293b] p-1 rounded-lg border border-slate-600 shadow-lg z-10">
                             <button onclick="event.preventDefault(); event.stopPropagation(); openToolModal(${i})" class="p-1.5 text-slate-400 hover:text-white"><i class="fas fa-edit text-[10px]"></i></button>
@@ -263,7 +303,6 @@
                         </div>
                     </div>`;
             });
-            localStorage.setItem('petlojas-v5-tools', JSON.stringify(tools));
         }
 
         function renderProjects() {
@@ -293,7 +332,6 @@
                     </div>`;
             });
             updateCenter();
-            localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
         }
 
         function selectProject(i) { activeProjectIdx = i; activeLinkIdx = null; renderProjects(); }
@@ -303,9 +341,6 @@
             const nameEl = document.getElementById('active-project-name');
             const subEl = document.getElementById('active-project-subtitle');
             
-            if (!container || !nameEl) return;
-
-            // Tratamento blindado se não houver projeto
             if (activeProjectIdx === null || projects.length === 0 || !projects[activeProjectIdx]) {
                 nameEl.innerText = 'Nenhum projeto selecionado';
                 subEl.innerText = 'Crie um projeto para começar';
@@ -318,14 +353,12 @@
             const p = projects[activeProjectIdx];
             nameEl.innerText = p.name;
             subEl.innerText = p.subtitle || '';
-            
             container.innerHTML = '';
             
-            // Tratamento blindado caso links seja inexistente
             if (!p.links || !Array.isArray(p.links)) p.links = [];
 
             if (p.links.length === 0) {
-                 container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Este projeto ainda não tem links ou subprojetos.<br>Clique no botão verde (+) para adicionar.</div>`;
+                 container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Este projeto não tem subprojetos.<br>Clique no botão verde (+) para adicionar.</div>`;
             }
 
             p.links.forEach((l, i) => {
@@ -358,9 +391,6 @@
             const addBtn = document.getElementById('add-note-btn');
             const titleSpan = document.getElementById('active-link-name');
 
-            if (!container) return;
-
-            // Blindagem: Se não houver nada selecionado
             if (activeProjectIdx === null || activeLinkIdx === null || !projects[activeProjectIdx] || !projects[activeProjectIdx].links || !projects[activeProjectIdx].links[activeLinkIdx]) {
                 container.innerHTML = `<div class="text-center text-slate-500 text-xs mt-10">Selecione um subprojeto (link) na coluna verde para abrir a caderneta.</div>`;
                 addBtn.classList.add('hidden');
@@ -369,7 +399,6 @@
             }
 
             const activeLink = projects[activeProjectIdx].links[activeLinkIdx];
-            // Sanitização de segurança
             if (!activeLink.notebook || !Array.isArray(activeLink.notebook)) activeLink.notebook = [];
 
             titleSpan.innerText = activeLink.title || 'Caderneta';
@@ -407,7 +436,6 @@
                         </div>`;
                 });
             }
-            localStorage.setItem('petlojas-v5-data', JSON.stringify(projects));
         }
 
         // === MODAIS ===
@@ -428,9 +456,9 @@
             const i = document.getElementById('edit-tool-index').value;
             const data = { name: document.getElementById('tool-name-input').value, url: document.getElementById('tool-url-input').value };
             if(i > -1) tools[i] = data; else tools.push(data);
-            closeModal('tool-modal'); renderTools();
+            closeModal('tool-modal'); renderTools(); saveToCloud(); // <-- SALVA NA NUVEM
         }
-        function deleteTool(i) { if(confirm('Excluir ferramenta?')) { tools.splice(i, 1); renderTools(); } }
+        function deleteTool(i) { if(confirm('Excluir ferramenta?')) { tools.splice(i, 1); renderTools(); saveToCloud(); } }
 
         function openProjectModal(i = -1) {
             document.getElementById('edit-project-index').value = i;
@@ -447,9 +475,9 @@
             const i = document.getElementById('edit-project-index').value;
             const data = { name: document.getElementById('proj-name-input').value || 'Novo Projeto', subtitle: document.getElementById('proj-sub-input').value, links: i > -1 ? projects[i].links : [] };
             if(i > -1) projects[i] = data; else { projects.push(data); activeProjectIdx = projects.length - 1; }
-            closeModal('project-modal'); renderProjects();
+            closeModal('project-modal'); renderProjects(); saveToCloud();
         }
-        function deleteProject(i) { if(confirm('Excluir projeto?')) { projects.splice(i, 1); activeProjectIdx = projects.length > 0 ? 0 : null; renderProjects(); } }
+        function deleteProject(i) { if(confirm('Excluir projeto?')) { projects.splice(i, 1); activeProjectIdx = projects.length > 0 ? 0 : null; renderProjects(); saveToCloud(); } }
 
         function openLinkModal(i = -1) {
             document.getElementById('edit-link-index').value = i;
@@ -475,9 +503,9 @@
             };
             if(i > -1) projects[activeProjectIdx].links[i] = data; 
             else { projects[activeProjectIdx].links.push(data); activeLinkIdx = projects[activeProjectIdx].links.length - 1; }
-            closeModal('link-modal'); renderProjects();
+            closeModal('link-modal'); renderProjects(); saveToCloud();
         }
-        function deleteLink(i) { if(confirm('Excluir subprojeto?')) { projects[activeProjectIdx].links.splice(i, 1); if(activeLinkIdx === i) activeLinkIdx = null; renderProjects(); } }
+        function deleteLink(i) { if(confirm('Excluir subprojeto?')) { projects[activeProjectIdx].links.splice(i, 1); if(activeLinkIdx === i) activeLinkIdx = null; renderProjects(); saveToCloud(); } }
 
         function openNoteModal(i = -1) {
             document.getElementById('edit-note-index').value = i;
@@ -504,14 +532,16 @@
                 done: i > -1 ? projects[activeProjectIdx].links[activeLinkIdx].notebook[i].done : false
             };
             if(i > -1) projects[activeProjectIdx].links[activeLinkIdx].notebook[i] = data; else projects[activeProjectIdx].links[activeLinkIdx].notebook.push(data);
-            closeModal('note-modal'); renderNotebook();
+            closeModal('note-modal'); renderNotebook(); saveToCloud();
         }
-        function deleteNote(i) { if(confirm('Excluir anotação?')) { projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1); renderNotebook(); } }
-        function toggleNoteDone(i) { const note = projects[activeProjectIdx].links[activeLinkIdx].notebook[i]; note.done = !note.done; renderNotebook(); }
+        function deleteNote(i) { if(confirm('Excluir anotação?')) { projects[activeProjectIdx].links[activeLinkIdx].notebook.splice(i, 1); renderNotebook(); saveToCloud(); } }
+        function toggleNoteDone(i) { const note = projects[activeProjectIdx].links[activeLinkIdx].notebook[i]; note.done = !note.done; renderNotebook(); saveToCloud(); }
 
-        // INICIA O SISTEMA
-        renderTools();
-        renderProjects(); 
+        // ==========================================
+        // 4. INICIA O SISTEMA BUSCANDO DA NUVEM
+        // ==========================================
+        window.onload = loadFromCloud;
+
     </script>
 </body>
 </html>
